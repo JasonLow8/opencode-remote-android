@@ -477,6 +477,12 @@ function App() {
     return modelInfo?.variants ? Object.keys(modelInfo.variants) : []
   }, [sessionInfo.model, providers])
 
+  useEffect(() => {
+    if (currentVariant && !availableVariants.includes(currentVariant)) {
+      setCurrentVariant(null)
+    }
+  }, [availableVariants])
+
   async function openSession(sessionID: string, directory: string) {
     setSelectedID(sessionID)
     setMessages([])
