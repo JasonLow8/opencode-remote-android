@@ -87,7 +87,8 @@ jobs:
       - name: Apply Tailscale Gradle config
         run: |
           # Set minSdk to 26 (required by libtailscale)
-          sed -i 's/minSdk\s*[0-9]\+/minSdk 26/' web/android/app/build.gradle
+          sed -i 's/minSdkVersion [0-9]*/minSdkVersion 26/g' web/android/app/build.gradle
+          sed -i 's/minSdk [0-9]*/minSdk 26/g' web/android/app/build.gradle
 
           # Add libtailscale AAR dependency + kotlinx-coroutines
           # Insert after the dependencies block opening
