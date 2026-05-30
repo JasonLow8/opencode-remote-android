@@ -382,9 +382,14 @@ function App() {
   const [testingConnection, setTestingConnection] = useState(false)
   const [settingsNotice, setSettingsNotice] = useState<{ type: NoticeType; text: string } | null>(null)
   const [runtimeError, setRuntimeError] = useState<string | null>(null)
+  const [pullDelta, setPullDelta] = useState(0)
+  const [isPullRefreshing, setIsPullRefreshing] = useState(false)
   const messagesRef = useRef<HTMLDivElement | null>(null)
   const completionAudioRef = useRef<HTMLAudioElement | null>(null)
   const wasRunningRef = useRef(false)
+  const pullDeltaRef = useRef(0)
+  const sessionsRef = useRef<HTMLElement | null>(null)
+  const PULL_THRESHOLD = 80
 
   const selectedSession = useMemo(
     () => sessions.find((session) => session.id === selectedID) ?? null,
@@ -610,15 +615,66 @@ function App() {
 
   useEffect(() => {
     if (view !== "detail") return
-    const container = messagesRef.current
-    if (!container) return
-    container.scrollTop = container.scrollHeight
+    window.scrollTo(0, document.body.scrollHeight)
   }, [view, renderedMessages.length, busySending])
 
   useEffect(() => {
     completionAudioRef.current = new Audio("/audio/staplebops-01.aac")
     completionAudioRef.current.preload = "auto"
   }, [])
+
+  useEffect(() => {
+    if (view !== "sessions") return
+    const el = sessionsRef.current
+    if (!el) return
+
+    let startY = 0
+    let dragging = false
+
+    const onTouchStart = (e: TouchEvent) => {
+      if (window.scrollY > 5) return
+      startY = e.touches[0].clientY
+      dragging = true
+    }
+
+    const onTouchMove = (e: TouchEvent) => {
+      if (!dragging) return
+      const delta = e.touches[0].clientY - startY
+      if (delta > 0) {
+        e.preventDefault()
+        const clamped = Math.min(delta, PULL_THRESHOLD * 1.5)
+        pullDeltaRef.current = clamped
+        setPullDelta(clamped)
+      } else {
+        pullDeltaRef.current = 0
+        setPullDelta(0)
+        dragging = false
+      }
+    }
+
+    const onTouchEnd = async () => {
+      if (!dragging) return
+      dragging = false
+      const delta = pullDeltaRef.current
+      pullDeltaRef.current = 0
+      setPullDelta(0)
+      if (delta >= PULL_THRESHOLD) {
+        setIsPullRefreshing(true)
+        await refreshSessions()
+        setIsPullRefreshing(false)
+      }
+    }
+
+    el.addEventListener("touchstart", onTouchStart, { passive: true })
+    el.addEventListener("touchmove", onTouchMove, { passive: false })
+    el.addEventListener("touchend", onTouchEnd, { passive: true })
+
+    return () => {
+      el.removeEventListener("touchstart", onTouchStart)
+      el.removeEventListener("touchmove", onTouchMove)
+      el.removeEventListener("touchend", onTouchEnd)
+    }
+  }, [view, config.host, config.password])
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme)
@@ -884,7 +940,19 @@ function App() {
       )}
 
       {view === "sessions" && (
-        <section className="panel sessions fade-in">
+        <section className="panel sessions fade-in" ref={sessionsRef}>
+          <div
+            className="pull-indicator"
+            style={{ height: pullDelta > 10 ? `${Math.min(pullDelta * 0.6, 52)}px` : "0" }}
+          >
+            {isPullRefreshing ? (
+              <LoadingIcon size={20} />
+            ) : pullDelta >= PULL_THRESHOLD ? (
+              <span>↑ Release to refresh</span>
+            ) : (
+              <span>↓ Pull to refresh</span>
+            )}
+          </div>
           <div className="header-row">
             <h2>Sessions</h2>
           </div>
