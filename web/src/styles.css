@@ -674,63 +674,91 @@ button:disabled {
   flex-wrap: wrap;
 }
 
-/* Session Info Bar (model, mode, agent) */
-.session-info-bar {
+/* Session Meta (model + mode row, agent row) */
+.session-meta {
   display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-1);
+  flex-direction: column;
+  gap: 3px;
   margin-bottom: var(--space-2);
-  padding: var(--space-1) var(--space-2);
-  background: rgba(15, 23, 42, 0.5);
-  border-radius: var(--radius-md);
-  border: 1px solid var(--secondary-700);
 }
 
-.session-info-chip {
-  display: inline-flex;
+.session-meta-model-row {
+  display: flex;
   align-items: center;
-  gap: var(--space-1);
-  font-size: 0.7rem;
-  padding: 2px var(--space-2);
-  background: rgba(255, 255, 255, 0.06);
-  border-radius: var(--radius-sm);
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.meta-model {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--secondary-200);
   white-space: nowrap;
 }
 
-.chip-label {
+.meta-provider {
   color: var(--secondary-400);
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  font-size: 0.65rem;
 }
 
-.chip-value {
+.meta-sep {
+  color: var(--secondary-600);
+  margin: 0 1px;
+}
+
+.meta-modelid {
   color: var(--secondary-100);
+}
+
+.meta-mode {
+  font-size: 0.68rem;
   font-family: var(--font-mono);
-  font-size: 0.65rem;
-}
-
-.chip-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 18px;
-  height: 18px;
-  padding: 0;
-  border: none;
-  background: rgba(14, 165, 233, 0.15);
   color: var(--primary-400);
-  border-radius: 50%;
-  cursor: pointer;
-  font-size: 0.7rem;
-  line-height: 1;
-  min-height: unset;
-  transition: background var(--transition-fast);
+  background: rgba(14, 165, 233, 0.12);
+  border: 1px solid rgba(14, 165, 233, 0.25);
+  border-radius: var(--radius-sm);
+  padding: 1px 6px;
+  white-space: nowrap;
 }
 
-.chip-btn:hover {
-  background: rgba(14, 165, 233, 0.3);
+.session-meta-agent {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding: 4px var(--space-2);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  cursor: default;
+  font-size: 0.72rem;
+  min-height: unset;
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+  text-align: left;
+}
+
+.session-meta-agent:not(:disabled) {
+  cursor: pointer;
+}
+
+.session-meta-agent:not(:disabled):hover {
+  background: rgba(14, 165, 233, 0.1);
+  border-color: rgba(14, 165, 233, 0.2);
+}
+
+.meta-agent-name {
+  font-family: var(--font-mono);
+  color: var(--secondary-100);
+  flex: 1;
+}
+
+.meta-agent-cycle {
+  color: var(--secondary-500);
+  font-size: 0.75rem;
+  transition: color var(--transition-fast);
+}
+
+.session-meta-agent:hover .meta-agent-cycle {
+  color: var(--primary-400);
 }
 
 .inline-actions {
@@ -1711,14 +1739,6 @@ button:disabled {
     max-height: 180px;
   }
 
-  .session-info-bar {
-    flex-direction: column;
-    gap: var(--space-1);
-  }
-
-  .session-info-chip {
-    width: 100%;
-  }
   
   .inline-actions {
     flex-wrap: wrap;
@@ -3219,21 +3239,30 @@ input:focus, textarea:focus {
   color: var(--secondary-800);
 }
 
-[data-theme="light"] .session-info-bar {
-  background: rgba(255, 255, 255, 0.5);
-  border-color: var(--secondary-200);
-}
-
-[data-theme="light"] .session-info-chip {
-  background: rgba(0, 0, 0, 0.04);
-}
-
-[data-theme="light"] .chip-label {
+[data-theme="light"] .meta-model .meta-provider {
   color: var(--secondary-500);
 }
 
-[data-theme="light"] .chip-value {
-  color: var(--secondary-700);
+[data-theme="light"] .meta-model .meta-modelid {
+  color: var(--secondary-800);
+}
+
+[data-theme="light"] .meta-mode {
+  color: var(--primary-600);
+  background: rgba(14, 165, 233, 0.08);
+  border-color: rgba(14, 165, 233, 0.2);
+}
+
+[data-theme="light"] .session-meta-agent {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+[data-theme="light"] .session-meta-agent:not(:disabled):hover {
+  background: rgba(14, 165, 233, 0.07);
+}
+
+[data-theme="light"] .meta-agent-name {
+  color: var(--secondary-800);
 }
 
 [data-theme="light"] .pill.busy {

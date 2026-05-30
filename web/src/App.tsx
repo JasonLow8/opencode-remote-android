@@ -1235,33 +1235,31 @@ function App() {
 
           <div className="composer">
             {selectedSession && (sessionInfo.model || sessionInfo.mode || sessionInfo.agent) && (
-              <div className="session-info-bar">
-                {sessionInfo.model && (
-                  <span className="session-info-chip" title="Model">
-                    <span className="chip-label">Model</span>
-                    <span className="chip-value">{sessionInfo.model.providerID}/{sessionInfo.model.modelID}</span>
-                  </span>
+              <div className="session-meta">
+                {(sessionInfo.model || sessionInfo.mode) && (
+                  <div className="session-meta-model-row">
+                    {sessionInfo.model && (
+                      <span className="meta-model">
+                        <span className="meta-provider">{sessionInfo.model.providerID}</span>
+                        <span className="meta-sep">/</span>
+                        <span className="meta-modelid">{sessionInfo.model.modelID}</span>
+                      </span>
+                    )}
+                    {sessionInfo.mode && (
+                      <span className="meta-mode">{sessionInfo.mode}</span>
+                    )}
+                  </div>
                 )}
-                {sessionInfo.mode && (
-                  <span className="session-info-chip" title="Mode">
-                    <span className="chip-label">Mode</span>
-                    <span className="chip-value">{sessionInfo.mode}</span>
-                  </span>
-                )}
-                <span className="session-info-chip" title="Agent">
-                  <span className="chip-label">Agent</span>
-                  <span className="chip-value">{sessionInfo.agent ?? "—"}</span>
-                  {agents.length > 0 && (
-                    <button
-                      type="button"
-                      className="chip-btn"
-                      onClick={cycleAgent}
-                      title="Cycle agent"
-                    >
-                      ↻
-                    </button>
-                  )}
-                </span>
+                <button
+                  type="button"
+                  className="session-meta-agent"
+                  onClick={agents.length > 0 ? cycleAgent : undefined}
+                  disabled={agents.length === 0}
+                  title={agents.length > 0 ? "Cycle agent" : undefined}
+                >
+                  <span className="meta-agent-name">{sessionInfo.agent ?? "—"}</span>
+                  {agents.length > 0 && <span className="meta-agent-cycle">↻</span>}
+                </button>
               </div>
             )}
             {slashOpen && filteredCommands.length > 0 && (
