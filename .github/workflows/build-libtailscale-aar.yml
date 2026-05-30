@@ -1,0 +1,104 @@
+name: Build libtailscale AAR
+
+on:
+  workflow_dispatch:
+    inputs:
+      tailscale_ref:
+        description: 'Tailscale git ref — leave blank for latest stable release tag'
+        required: false
+        default: ''
+  workflow_call:
+    inputs:
+      tailscale_ref:
+        description: 'Tailscale git ref — leave blank for latest stable release tag'
+        type: string
+        required: false
+        default: ''
+    outputs:
+      artifact_name:
+        description: 'Name of the uploaded AAR artifact'
+        value: ${{ jobs.build.outputs.artifact_name }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      artifact_name: ${{ steps.meta.outputs.artifact_name }}
+
+    steps:
+      - name: Setup Go 1.22
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+          cache: false
+
+      - name: Setup JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android NDK
+        run: sdkmanager "ndk;25.2.9519653"
+
+      - name: Resolve Tailscale ref
+        id: resolve
+        run: |
+          INPUT_REF="${{ inputs.tailscale_ref }}"
+          if [ -z "$INPUT_REF" ]; then
+            LATEST=$(curl -fsSL https://api.github.com/repos/tailscale/tailscale/releases/latest | jq -r .tag_name)
+            echo "ref=$LATEST" >> "$GITHUB_OUTPUT"
+            echo "Resolved latest stable tag: $LATEST"
+          else
+            echo "ref=$INPUT_REF" >> "$GITHUB_OUTPUT"
+            echo "Using provided ref: $INPUT_REF"
+          fi
+
+      - name: Cache Go modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/go/pkg/mod
+            ~/.cache/go-build
+          key: go-libtailscale-${{ steps.resolve.outputs.ref }}
+          restore-keys: go-libtailscale-
+
+      - name: Install gomobile
+        run: |
+          go install golang.org/x/mobile/cmd/gomobile@latest
+          gomobile init
+
+      - name: Clone Tailscale
+        run: |
+          git clone --depth 1 \
+            --branch "${{ steps.resolve.outputs.ref }}" \
+            https://github.com/tailscale/tailscale ts
+
+      - name: Build AAR
+        working-directory: ts
+        env:
+          ANDROID_NDK_HOME: ${{ env.ANDROID_HOME }}/ndk/25.2.9519653
+        run: |
+          gomobile bind \
+            -target android \
+            -androidapi 26 \
+            -o ../libtailscale.aar \
+            tailscale.com/libtailscale
+
+      - name: Set artifact name
+        id: meta
+        run: |
+          REF="${{ steps.resolve.outputs.ref }}"
+          echo "artifact_name=libtailscale-aar-${REF//\//-}" >> "$GITHUB_OUTPUT"
+
+      - name: Upload AAR artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.meta.outputs.artifact_name }}
+          path: |
+            libtailscale.aar
+            libtailscale-sources.jar
+          if-no-files-found: error
