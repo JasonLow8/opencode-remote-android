@@ -630,6 +630,41 @@ button:disabled {
   backdrop-filter: blur(10px);
 }
 
+/* Toast Notifications */
+.toast {
+  position: fixed;
+  top: var(--space-4);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  padding: var(--space-3) var(--space-5);
+  border-radius: var(--radius-lg);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  max-width: 90vw;
+  text-align: center;
+}
+
+.toast-error {
+  color: #fff;
+  background: var(--accent-600);
+  border: 1px solid var(--accent-500);
+}
+
+.toast-success {
+  color: #fff;
+  background: var(--success-600);
+  border: 1px solid var(--success-500);
+}
+
+.toast-info {
+  color: #fff;
+  background: var(--primary-600);
+  border: 1px solid var(--primary-500);
+}
+
 /* Layout Utilities */
 .header-row {
   display: flex;
@@ -643,11 +678,11 @@ button:disabled {
 .session-info-bar {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-2);
-  margin-top: var(--space-3);
-  padding: var(--space-2) var(--space-3);
+  gap: var(--space-1);
+  margin-bottom: var(--space-2);
+  padding: var(--space-1) var(--space-2);
   background: rgba(15, 23, 42, 0.5);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
   border: 1px solid var(--secondary-700);
 }
 
@@ -655,10 +690,10 @@ button:disabled {
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
-  font-size: 0.75rem;
-  padding: var(--space-1) var(--space-2);
+  font-size: 0.7rem;
+  padding: 2px var(--space-2);
   background: rgba(255, 255, 255, 0.06);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
   white-space: nowrap;
 }
 
@@ -667,27 +702,28 @@ button:disabled {
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.04em;
+  font-size: 0.65rem;
 }
 
 .chip-value {
   color: var(--secondary-100);
   font-family: var(--font-mono);
-  font-size: 0.7rem;
+  font-size: 0.65rem;
 }
 
 .chip-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   padding: 0;
   border: none;
   background: rgba(14, 165, 233, 0.15);
   color: var(--primary-400);
   border-radius: 50%;
   cursor: pointer;
-  font-size: 0.8rem;
+  font-size: 0.7rem;
   line-height: 1;
   min-height: unset;
   transition: background var(--transition-fast);
@@ -3110,6 +3146,22 @@ input:focus, textarea:focus {
   color: var(--accent-700);
   background: rgba(254, 226, 226, 0.7);
   border-color: var(--accent-300);
+}
+
+[data-theme="light"] .toast {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+[data-theme="light"] .toast-error {
+  background: var(--accent-600);
+}
+
+[data-theme="light"] .toast-success {
+  background: var(--success-600);
+}
+
+[data-theme="light"] .toast-info {
+  background: var(--primary-600);
 }
 
 [data-theme="light"] .command-card {

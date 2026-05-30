@@ -14,9 +14,14 @@ on:
 
 permissions:
   contents: write
+  actions: read
 
 jobs:
+  build-libtailscale:
+    uses: ./.github/workflows/build-libtailscale-aar.yml
+
   build:
+    needs: build-libtailscale
     runs-on: ubuntu-latest
     env:
       ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
@@ -72,6 +77,32 @@ jobs:
       - name: Sync Capacitor project
         run: npx cap sync android
         working-directory: web
+
+      - name: Download libtailscale AAR
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ needs.build-libtailscale.outputs.artifact_name }}
+          path: web/android/app/libs
+
+      - name: Apply Tailscale Gradle config
+        run: |
+          # Set minSdk to 26 (required by libtailscale)
+          sed -i 's/minSdk\s*[0-9]\+/minSdk 26/' web/android/app/build.gradle
+
+          # Add libtailscale AAR dependency + kotlinx-coroutines
+          # Insert after the dependencies block opening
+          awk -i inplace '
+            /^dependencies\s*\{/ { print; print "    implementation fileTree(dir: \x27libs\x27, include: [\x27*.aar\x27, \x27*.jar\x27])"; print "    implementation \x27org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3\x27"; next }
+            { print }
+          ' web/android/app/build.gradle
+
+      - name: Add Tailscale permissions to AndroidManifest
+        run: |
+          # Add INTERNET and FOREGROUND_SERVICE permissions if not already present
+          for perm in "android.permission.INTERNET" "android.permission.FOREGROUND_SERVICE"; do
+            grep -q "$perm" web/android/app/src/main/AndroidManifest.xml || \
+              sed -i "/<manifest/a\    <uses-permission android:name=\"$perm\" />" web/android/app/src/main/AndroidManifest.xml
+          done
 
       - name: Read app version
         id: version

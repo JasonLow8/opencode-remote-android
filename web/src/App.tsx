@@ -384,6 +384,7 @@ function App() {
   const [testingConnection, setTestingConnection] = useState(false)
   const [settingsNotice, setSettingsNotice] = useState<{ type: NoticeType; text: string } | null>(null)
   const [runtimeError, setRuntimeError] = useState<string | null>(null)
+  const [toast, setToast] = useState<{ type: NoticeType; text: string } | null>(null)
   const [pullDelta, setPullDelta] = useState(0)
   const [isPullRefreshing, setIsPullRefreshing] = useState(false)
   const [slashOpen, setSlashOpen] = useState(false)
@@ -573,7 +574,9 @@ function App() {
       setSelectedID(created.id)
       await loadSelected(created.id, created.directory)
     } catch (err) {
-      setRuntimeError((err as Error).message)
+      const message = (err as Error).message
+      setRuntimeError(message)
+      setToast({ type: "error", text: message })
     }
   }
 
@@ -743,6 +746,12 @@ function App() {
   }, [theme])
 
   useEffect(() => {
+    if (!toast) return
+    const timer = setTimeout(() => setToast(null), 4000)
+    return () => clearTimeout(timer)
+  }, [toast])
+
+  useEffect(() => {
     if (!selectedSession) {
       wasRunningRef.current = false
       return
@@ -781,6 +790,14 @@ function App() {
 
   return (
     <div className="app-shell">
+      {toast && (
+        <div className={`toast toast-${toast.type} fade-in`} onClick={() => setToast(null)}>
+          {toast.type === 'success' && '✓ '}
+          {toast.type === 'error' && '✗ '}
+          {toast.type === 'info' && 'ℹ '}
+          {toast.text}
+        </div>
+      )}
       <header className="top-nav panel fade-in">
         <div className="brand-section">
           <div className="brand-title">
@@ -1109,37 +1126,6 @@ function App() {
               </div>
             </div>
 
-            {selectedSession && (sessionInfo.model || sessionInfo.mode || sessionInfo.agent) && (
-              <div className="session-info-bar">
-                {sessionInfo.model && (
-                  <span className="session-info-chip" title="Model">
-                    <span className="chip-label">Model</span>
-                    <span className="chip-value">{sessionInfo.model.providerID}/{sessionInfo.model.modelID}</span>
-                  </span>
-                )}
-                {sessionInfo.mode && (
-                  <span className="session-info-chip" title="Mode">
-                    <span className="chip-label">Mode</span>
-                    <span className="chip-value">{sessionInfo.mode}</span>
-                  </span>
-                )}
-                <span className="session-info-chip" title="Agent">
-                  <span className="chip-label">Agent</span>
-                  <span className="chip-value">{sessionInfo.agent ?? "—"}</span>
-                  {agents.length > 0 && (
-                    <button
-                      type="button"
-                      className="chip-btn"
-                      onClick={cycleAgent}
-                      title="Cycle agent"
-                    >
-                      ↻
-                    </button>
-                  )}
-                </span>
-              </div>
-            )}
-
           <div className="todo-box">
             <div className="todo-header-row">
               <h3>
@@ -1248,6 +1234,36 @@ function App() {
           )}
 
           <div className="composer">
+            {selectedSession && (sessionInfo.model || sessionInfo.mode || sessionInfo.agent) && (
+              <div className="session-info-bar">
+                {sessionInfo.model && (
+                  <span className="session-info-chip" title="Model">
+                    <span className="chip-label">Model</span>
+                    <span className="chip-value">{sessionInfo.model.providerID}/{sessionInfo.model.modelID}</span>
+                  </span>
+                )}
+                {sessionInfo.mode && (
+                  <span className="session-info-chip" title="Mode">
+                    <span className="chip-label">Mode</span>
+                    <span className="chip-value">{sessionInfo.mode}</span>
+                  </span>
+                )}
+                <span className="session-info-chip" title="Agent">
+                  <span className="chip-label">Agent</span>
+                  <span className="chip-value">{sessionInfo.agent ?? "—"}</span>
+                  {agents.length > 0 && (
+                    <button
+                      type="button"
+                      className="chip-btn"
+                      onClick={cycleAgent}
+                      title="Cycle agent"
+                    >
+                      ↻
+                    </button>
+                  )}
+                </span>
+              </div>
+            )}
             {slashOpen && filteredCommands.length > 0 && (
               <div className="slash-popover">
                 {filteredCommands.map((cmd, index) => (
