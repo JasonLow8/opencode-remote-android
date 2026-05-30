@@ -166,7 +166,8 @@ export type CommandInfo = {
 export type AgentInfo = {
   name: string
   description?: string
-  builtIn: boolean
+  mode: "subagent" | "primary" | "all"
+  hidden?: boolean
   model?: {
     modelID: string
     providerID: string

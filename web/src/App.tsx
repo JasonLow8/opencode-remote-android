@@ -452,6 +452,11 @@ function App() {
     return commands.filter((cmd) => cmd.name.toLowerCase().includes(filter))
   }, [commands, slashFilter, slashOpen])
 
+  const primaryAgents = useMemo(
+    () => agents.filter((a) => (a.mode === "primary" || a.mode === "all") && !a.hidden),
+    [agents]
+  )
+
   const hasConfiguredServer = Boolean(config.host && config.port > 0)
   const isSessionRunning = Boolean(selectedSession && ["busy", "retry"].includes(selectedSession.status))
   const isWorking = isSessionRunning
@@ -653,10 +658,10 @@ function App() {
   }
 
   function cycleAgent() {
-    if (agents.length === 0) return
-    const current = currentAgent ?? sessionInfo.agent ?? agents[0].name
-    const idx = agents.findIndex((a) => a.name === current)
-    const next = agents[(idx + 1) % agents.length]
+    if (primaryAgents.length === 0) return
+    const current = currentAgent ?? sessionInfo.agent ?? primaryAgents[0].name
+    const idx = primaryAgents.findIndex((a) => a.name === current)
+    const next = primaryAgents[(idx + 1) % primaryAgents.length]
     setCurrentAgent(next.name)
   }
 
@@ -1304,12 +1309,12 @@ function App() {
                 <button
                   type="button"
                   className="session-meta-agent"
-                  onClick={agents.length > 0 ? cycleAgent : undefined}
-                  disabled={agents.length === 0}
-                  title={agents.length > 0 ? "Cycle agent" : undefined}
+                  onClick={primaryAgents.length > 0 ? cycleAgent : undefined}
+                  disabled={primaryAgents.length === 0}
+                  title={primaryAgents.length > 0 ? "Cycle agent" : undefined}
                 >
                   <span className="meta-agent-name">{sessionInfo.agent ?? "—"}</span>
-                  {agents.length > 0 && <span className="meta-agent-cycle">↻</span>}
+                  {primaryAgents.length > 0 && <span className="meta-agent-cycle">↻</span>}
                 </button>
               </div>
             )}
