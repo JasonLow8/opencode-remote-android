@@ -22,6 +22,17 @@ import {
 const STORAGE_KEY = "opencode.remote.server"
 const THEME_KEY = "opencode.remote.theme"
 
+const BUILTIN_COMMANDS: import("./types").CommandInfo[] = [
+  { name: "new",     description: "New session" },
+  { name: "model",   description: "Switch model" },
+  { name: "agent",   description: "Switch agent" },
+  { name: "compact", description: "Compact context" },
+  { name: "fork",    description: "Fork session" },
+  { name: "undo",    description: "Undo last message" },
+  { name: "redo",    description: "Redo last message" },
+  { name: "mcp",     description: "MCP tools" },
+]
+
 const defaultConfig: ServerConfig = {
   host: "",
   port: 4096,
@@ -555,9 +566,10 @@ function App() {
     if (!config.host || !config.password) return
     try {
       const list = await api.listCommands(config)
-      setCommands(list)
+      const serverNames = new Set(list.map((c) => c.name))
+      setCommands([...BUILTIN_COMMANDS.filter((c) => !serverNames.has(c.name)), ...list])
     } catch {
-      setCommands([])
+      setCommands(BUILTIN_COMMANDS)
     }
   }
 
@@ -641,6 +653,11 @@ function App() {
         const command = normalized.split(" ")[0]?.trim()
         const args = normalized.slice(command.length).trim()
         if (!command) return
+        if (command === "new") {
+          setBusySending(false)
+          await createSession()
+          return
+        }
         const reply = await api.sendCommand(config, selectedSession.id, command, args, selectedSession.directory, currentAgent ?? undefined, currentVariant ?? undefined)
         if (reply && reply.info) {
           if (reply.info.agent) setCurrentAgent(reply.info.agent)
