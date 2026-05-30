@@ -243,9 +243,17 @@ input:focus, textarea:focus {
 }
 
 textarea {
-  resize: vertical;
-  min-height: 120px;
+  resize: none;
+  min-height: 44px;
   line-height: 1.6;
+}
+
+.composer-textarea {
+  min-height: 44px;
+  max-height: 200px;
+  overflow-y: auto;
+  resize: none;
+  line-height: 1.5;
 }
 
 /* Buttons */
@@ -735,35 +743,47 @@ button:disabled {
   border-color: rgba(14, 165, 233, 0.4);
 }
 
-.session-meta-agent {
+.session-meta-agent-row {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
-  width: 100%;
-  padding: 4px var(--space-2);
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid transparent;
-  border-radius: var(--radius-sm);
-  cursor: default;
-  font-size: 0.72rem;
-  min-height: unset;
-  transition: background var(--transition-fast), border-color var(--transition-fast);
-  text-align: left;
 }
 
-.session-meta-agent:not(:disabled) {
-  cursor: pointer;
-}
-
-.session-meta-agent:not(:disabled):hover {
-  background: rgba(14, 165, 233, 0.1);
-  border-color: rgba(14, 165, 233, 0.2);
-}
-
-.meta-agent-name {
+.meta-agent {
+  font-size: 0.68rem;
   font-family: var(--font-mono);
+  color: var(--secondary-400);
+  background: transparent;
+  border: 1px solid var(--secondary-700);
+  border-radius: var(--radius-sm);
+  padding: 1px 6px;
+  white-space: nowrap;
+  cursor: pointer;
+  min-height: unset;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: color var(--transition-fast), border-color var(--transition-fast), background var(--transition-fast);
+}
+
+.meta-agent:disabled {
+  cursor: default;
+}
+
+.meta-agent:not(:disabled):hover {
+  color: var(--primary-400);
+  border-color: rgba(14, 165, 233, 0.4);
+  background: rgba(14, 165, 233, 0.08);
+}
+
+.meta-agent.active {
   color: var(--secondary-100);
-  flex: 1;
+  border-color: var(--secondary-600);
+}
+
+.meta-agent.active:not(:disabled):hover {
+  color: var(--primary-300);
+  background: rgba(14, 165, 233, 0.12);
+  border-color: rgba(14, 165, 233, 0.4);
 }
 
 .meta-agent-cycle {
@@ -772,7 +792,7 @@ button:disabled {
   transition: color var(--transition-fast);
 }
 
-.session-meta-agent:hover .meta-agent-cycle {
+.meta-agent:hover .meta-agent-cycle {
   color: var(--primary-400);
 }
 
@@ -790,17 +810,35 @@ button:disabled {
   display: flex;
   gap: var(--space-3);
   margin-top: var(--space-4);
-  align-items: stretch;
+  align-items: flex-start;
+}
+
+.new-session-input-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .new-session-input {
-  flex: 1;
   margin-top: 0;
+}
+
+.new-session-hint {
+  font-size: 0.68rem;
+  font-family: var(--font-mono);
+  color: var(--secondary-500);
+  padding: 0 var(--space-1);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .new-session-row button {
   white-space: nowrap;
   flex-shrink: 0;
+  align-self: flex-start;
+  margin-top: var(--space-2);
 }
 
 /* Session Cards */
@@ -3274,16 +3312,20 @@ input:focus, textarea:focus {
   border-color: rgba(14, 165, 233, 0.3);
 }
 
-[data-theme="light"] .session-meta-agent {
-  background: rgba(0, 0, 0, 0.03);
+[data-theme="light"] .meta-agent {
+  color: var(--secondary-500);
+  border-color: var(--secondary-300);
 }
 
-[data-theme="light"] .session-meta-agent:not(:disabled):hover {
-  background: rgba(14, 165, 233, 0.07);
-}
-
-[data-theme="light"] .meta-agent-name {
+[data-theme="light"] .meta-agent.active {
   color: var(--secondary-800);
+  border-color: var(--secondary-400);
+}
+
+[data-theme="light"] .meta-agent:not(:disabled):hover {
+  color: var(--primary-600);
+  background: rgba(14, 165, 233, 0.08);
+  border-color: rgba(14, 165, 233, 0.3);
 }
 
 [data-theme="light"] .pill.busy {

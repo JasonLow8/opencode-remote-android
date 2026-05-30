@@ -5,6 +5,7 @@ import type {
   DiffFile,
   HealthResponse,
   MessageEnvelope,
+  PathInfo,
   ProviderResponse,
   ServerConfig,
   Session,
@@ -128,6 +129,10 @@ export const api = {
 
   listProviders(config: ServerConfig) {
     return request<ProviderResponse>(config, "/provider")
+  },
+
+  getPath(config: ServerConfig) {
+    return request<PathInfo>(config, "/path")
   },
 
   createSession(config: ServerConfig, title?: string, directory?: string) {

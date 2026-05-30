@@ -366,6 +366,7 @@ function App() {
   const [currentAgent, setCurrentAgent] = useState<string | null>(null)
   const [providers, setProviders] = useState<ProviderInfo[]>([])
   const [currentVariant, setCurrentVariant] = useState<string | null>(null)
+  const [serverDirectory, setServerDirectory] = useState<string>("")
   const [helpPage, setHelpPage] = useState<"overview" | "server" | "network" | "troubleshooting" | "commands">(
     "overview"
   )
@@ -580,6 +581,16 @@ function App() {
     }
   }
 
+  async function loadPath() {
+    if (!config.host || !config.password) return
+    try {
+      const resp = await api.getPath(config)
+      setServerDirectory(resp.directory)
+    } catch {
+      setServerDirectory("")
+    }
+  }
+
   async function loadSelected(sessionID: string, directory: string) {
     setRuntimeError(null)
     try {
@@ -620,6 +631,7 @@ function App() {
     if (!text) return
     setComposer("")
     setSlashOpen(false)
+    if (textareaRef.current) textareaRef.current.style.height = "auto"
 
     setBusySending(true)
     setRuntimeError(null)
@@ -711,6 +723,7 @@ function App() {
     loadCommands().catch(() => undefined)
     loadAgents().catch(() => undefined)
     loadProviders().catch(() => undefined)
+    loadPath().catch(() => undefined)
     const timer = setInterval(() => {
       refreshSessions(true).catch(() => undefined)
       if (selectedSession) {
@@ -1085,12 +1098,17 @@ function App() {
           </div>
           
           <div className="new-session-row">
-            <input
-              placeholder="Folder path (leave empty for current directory)"
-              value={newSessionFolder}
-              onChange={(event) => setNewSessionFolder(event.target.value)}
-              className="new-session-input"
-            />
+            <div className="new-session-input-wrap">
+              <input
+                placeholder="Subfolder (leave empty for server directory)"
+                value={newSessionFolder}
+                onChange={(event) => setNewSessionFolder(event.target.value)}
+                className="new-session-input"
+              />
+              {serverDirectory && (
+                <span className="new-session-hint">{serverDirectory}</span>
+              )}
+            </div>
             <button onClick={createSession} className="btn-primary">
               <PlusIcon size={18} />
               New Session
@@ -1294,29 +1312,36 @@ function App() {
                         <span className="meta-modelid">{sessionInfo.model.modelID}</span>
                       </span>
                     )}
-                    {availableVariants.length > 0 && (
+                    {availableVariants.length > 0 && (() => {
+                      const effectiveAgentName = currentAgent ?? sessionInfo.agent ?? primaryAgents[0]?.name
+                      const agentDefaultVariant = agents.find(a => a.name === effectiveAgentName)?.variant
+                      const displayVariant = currentVariant ?? agentDefaultVariant ?? availableVariants[0]
+                      return (
                       <button
                         type="button"
                         className={`meta-variant${currentVariant ? " active" : ""}`}
                         onClick={cycleVariant}
                         title="Cycle model variant"
                       >
-                        {currentVariant ?? "auto"}
+                        {displayVariant}
                         <span className="meta-agent-cycle">↻</span>
                       </button>
-                    )}
+                      )
+                    })()}
                   </div>
                 )}
-                <button
-                  type="button"
-                  className="session-meta-agent"
-                  onClick={primaryAgents.length > 0 ? cycleAgent : undefined}
-                  disabled={primaryAgents.length === 0}
-                  title={primaryAgents.length > 0 ? "Cycle agent" : undefined}
-                >
-                  <span className="meta-agent-name">{sessionInfo.agent ?? "—"}</span>
-                  {primaryAgents.length > 0 && <span className="meta-agent-cycle">↻</span>}
-                </button>
+                <div className="session-meta-agent-row">
+                  <button
+                    type="button"
+                    className={`meta-agent${currentAgent ? " active" : ""}`}
+                    onClick={primaryAgents.length > 0 ? cycleAgent : undefined}
+                    disabled={primaryAgents.length === 0}
+                    title={primaryAgents.length > 0 ? "Cycle agent" : undefined}
+                  >
+                    {currentAgent ?? sessionInfo.agent ?? primaryAgents[0]?.name ?? "—"}
+                    {primaryAgents.length > 0 && <span className="meta-agent-cycle">↻</span>}
+                  </button>
+                </div>
               </div>
             )}
             {slashOpen && filteredCommands.length > 0 && (
@@ -1342,9 +1367,14 @@ function App() {
             )}
             <textarea
               ref={textareaRef}
+              className="composer-textarea"
               value={composer}
+              rows={1}
               onChange={(event) => {
-                const value = event.target.value
+                const el = event.target
+                el.style.height = "auto"
+                el.style.height = `${el.scrollHeight}px`
+                const value = el.value
                 setComposer(value)
                 if (value.startsWith("/")) {
                   const afterSlash = value.slice(1)

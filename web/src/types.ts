@@ -168,6 +168,7 @@ export type AgentInfo = {
   description?: string
   mode: "subagent" | "primary" | "all"
   hidden?: boolean
+  variant?: string
   model?: {
     modelID: string
     providerID: string
@@ -190,4 +191,12 @@ export type ProviderResponse = {
   all: ProviderInfo[]
   default: Record<string, string>
   connected: string[]
+}
+
+export type PathInfo = {
+  home: string
+  state: string
+  config: string
+  worktree: string
+  directory: string
 }
