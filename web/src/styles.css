@@ -551,7 +551,7 @@ button:disabled {
   display: inline-flex;
   border-radius: var(--radius-lg);
   overflow: hidden;
-  border: 1px solid var(--glass-border);
+  border: 1px solid var(--secondary-600);
   margin-top: var(--space-2);
 }
 
@@ -1741,8 +1741,8 @@ input:focus, textarea:focus {
 
 /* Dark theme: theme-btn inactive state */
 .theme-btn {
-  background: rgba(15, 23, 42, 0.6);
-  color: var(--secondary-400);
+  background: rgba(30, 41, 59, 0.9);
+  color: var(--secondary-200);
 }
 
 /* ================================================
@@ -1995,7 +1995,11 @@ input:focus, textarea:focus {
 [data-theme="light"] .btn-secondary { color: var(--secondary-700); }
 [data-theme="light"] .btn-secondary:hover { color: var(--secondary-800); }
 
+[data-theme="light"] .theme-switcher {
+  border-color: var(--secondary-300);
+}
+
 [data-theme="light"] .theme-btn {
-  background: rgba(241, 245, 249, 0.8);
-  color: var(--secondary-500);
+  background: rgba(241, 245, 249, 0.9);
+  color: var(--secondary-600);
 }
