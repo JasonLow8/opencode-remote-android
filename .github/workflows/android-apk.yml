@@ -86,15 +86,26 @@ jobs:
 
       - name: Apply Tailscale Gradle config
         run: |
+          BUILDGRADLE="web/android/app/build.gradle"
+
           # Set minSdk to 26 (required by libtailscale)
-          sed -i 's/minSdk\s*[0-9]\+/minSdk 26/' web/android/app/build.gradle
+          sed -i 's/minSdkVersion [0-9]*/minSdkVersion 26/g' "$BUILDGRADLE"
+          sed -i 's/minSdk [0-9]*/minSdk 26/g' "$BUILDGRADLE"
 
           # Add libtailscale AAR dependency + kotlinx-coroutines
-          # Insert after the dependencies block opening
-          awk -i inplace '
-            /^dependencies\s*\{/ { print; print "    implementation fileTree(dir: \x27libs\x27, include: [\x27*.aar\x27, \x27*.jar\x27])"; print "    implementation \x27org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3\x27"; next }
-            { print }
-          ' web/android/app/build.gradle
+          # Insert lines right after the dependencies block opening
+          python3 -c "
+import re
+with open('$BUILDGRADLE') as f:
+    content = f.read()
+content = re.sub(
+    r'(dependencies\s*\{)',
+    r'\1\n    implementation fileTree(dir: \"libs\", include: [\"*.aar\", \"*.jar\"])\n    implementation \"org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3\"',
+    content
+)
+with open('$BUILDGRADLE', 'w') as f:
+    f.write(content)
+"
 
       - name: Add Tailscale permissions to AndroidManifest
         run: |
