@@ -384,7 +384,11 @@ function App() {
   const [runtimeError, setRuntimeError] = useState<string | null>(null)
   const [pullDelta, setPullDelta] = useState(0)
   const [isPullRefreshing, setIsPullRefreshing] = useState(false)
+  const [slashOpen, setSlashOpen] = useState(false)
+  const [slashFilter, setSlashFilter] = useState("")
+  const [slashIndex, setSlashIndex] = useState(0)
   const messagesRef = useRef<HTMLDivElement | null>(null)
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null)
   const completionAudioRef = useRef<HTMLAudioElement | null>(null)
   const wasRunningRef = useRef(false)
   const pullDeltaRef = useRef(0)
@@ -436,6 +440,12 @@ function App() {
         message.compactionParts.length > 0
       )
   }, [messages])
+
+  const filteredCommands = useMemo(() => {
+    if (!slashOpen) return []
+    const filter = slashFilter.toLowerCase()
+    return commands.filter((cmd) => cmd.name.toLowerCase().startsWith(filter))
+  }, [commands, slashFilter, slashOpen])
 
   const hasConfiguredServer = Boolean(config.host && config.port > 0)
   const isSessionRunning = Boolean(selectedSession && ["busy", "retry"].includes(selectedSession.status))
@@ -546,16 +556,20 @@ function App() {
     const text = composer.trim()
     if (!text) return
     setComposer("")
+    setSlashOpen(false)
 
     setBusySending(true)
     setRuntimeError(null)
     try {
       if (text.startsWith("/")) {
-        const normalized = text.startsWith("/") ? text.slice(1) : text
+        const normalized = text.slice(1)
         const command = normalized.split(" ")[0]?.trim()
         const args = normalized.slice(command.length).trim()
         if (!command) return
-        await api.sendCommand(config, selectedSession.id, command, args, selectedSession.directory)
+        const reply = await api.sendCommand(config, selectedSession.id, command, args, selectedSession.directory)
+        if (reply && reply.info) {
+          setMessages((prev) => [...prev, reply])
+        }
       } else {
         await api.sendPrompt(config, selectedSession.id, text, selectedSession.directory)
       }
@@ -566,6 +580,14 @@ function App() {
     } finally {
       setBusySending(false)
     }
+  }
+
+  function handleSlashSelect(cmd: CommandInfo) {
+    setComposer(`/${cmd.name} `)
+    setSlashOpen(false)
+    setSlashFilter("")
+    setSlashIndex(0)
+    setTimeout(() => textareaRef.current?.focus(), 0)
   }
 
   async function deleteSession(sessionID: string) {
@@ -1156,17 +1178,77 @@ function App() {
           )}
 
           <div className="composer">
+            {slashOpen && filteredCommands.length > 0 && (
+              <div className="slash-popover">
+                {filteredCommands.map((cmd, index) => (
+                  <button
+                    key={cmd.name}
+                    type="button"
+                    className={`slash-item${index === slashIndex ? " active" : ""}`}
+                    onMouseDown={(e) => {
+                      e.preventDefault()
+                      handleSlashSelect(cmd)
+                    }}
+                    onMouseEnter={() => setSlashIndex(index)}
+                  >
+                    <span className="slash-name">/{cmd.name}</span>
+                    {cmd.description && (
+                      <span className="slash-description">{cmd.description}</span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
             <textarea
+              ref={textareaRef}
               value={composer}
-              onChange={(event) => setComposer(event.target.value)}
-              placeholder={selectedSession?.status === "ask" ? "Type your response..." : "Type a prompt or command (start with / for slash commands)..."}
+              onChange={(event) => {
+                const value = event.target.value
+                setComposer(value)
+                if (value.startsWith("/")) {
+                  const afterSlash = value.slice(1)
+                  const hasSpace = afterSlash.includes(" ")
+                  if (!hasSpace) {
+                    setSlashFilter(afterSlash)
+                    setSlashOpen(true)
+                    setSlashIndex(0)
+                    return
+                  }
+                }
+                setSlashOpen(false)
+              }}
               onKeyDown={(event) => {
+                if (slashOpen && filteredCommands.length > 0) {
+                  if (event.key === "ArrowDown") {
+                    event.preventDefault()
+                    setSlashIndex((i) => (i + 1) % filteredCommands.length)
+                    return
+                  }
+                  if (event.key === "ArrowUp") {
+                    event.preventDefault()
+                    setSlashIndex((i) => (i - 1 + filteredCommands.length) % filteredCommands.length)
+                    return
+                  }
+                  if (event.key === "Enter" && !event.shiftKey) {
+                    event.preventDefault()
+                    handleSlashSelect(filteredCommands[slashIndex] ?? filteredCommands[0])
+                    return
+                  }
+                  if (event.key === "Escape") {
+                    event.preventDefault()
+                    setSlashOpen(false)
+                    return
+                  }
+                }
                 if (event.key === "Enter" && !event.shiftKey) {
                   event.preventDefault()
                   if (!isWorking) {
                     send().catch(() => undefined)
                   }
                 }
+              }}
+              onBlur={() => {
+                setTimeout(() => setSlashOpen(false), 150)
               }}
               disabled={!selectedSession || isWorking}
             />

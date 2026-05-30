@@ -1460,6 +1460,68 @@ button:disabled {
   grid-template-columns: 1fr auto;
   gap: var(--space-3);
   align-items: end;
+  position: relative;
+}
+
+/* Slash Command Popover */
+.slash-popover {
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  right: 0;
+  margin-bottom: var(--space-2);
+  background: rgba(15, 23, 42, 0.95);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  max-height: 240px;
+  overflow-y: auto;
+  z-index: var(--z-dropdown);
+  padding: var(--space-1);
+}
+
+.slash-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  text-align: left;
+  color: var(--secondary-200);
+  font-size: 0.875rem;
+  min-height: 40px;
+  transition: background var(--transition-fast);
+}
+
+.slash-item:hover,
+.slash-item.active {
+  background: rgba(14, 165, 233, 0.15);
+}
+
+.slash-item.active {
+  background: rgba(14, 165, 233, 0.25);
+}
+
+.slash-name {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  color: var(--primary-400);
+  white-space: nowrap;
+}
+
+.slash-description {
+  color: var(--secondary-400);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
 }
 
 /* Help Section */
@@ -1543,6 +1605,10 @@ button:disabled {
   
   .composer {
     grid-template-columns: 1fr;
+  }
+  
+  .slash-popover {
+    max-height: 180px;
   }
   
   .inline-actions {
@@ -1641,6 +1707,10 @@ button:disabled {
     min-height: 48px; /* Larger touch targets on mobile */
     padding: var(--space-3) var(--space-4);
     font-size: 0.875rem;
+  }
+
+  .slash-popover {
+    max-height: 160px;
   }
 
   .todo-toggle-btn {
@@ -2985,6 +3055,32 @@ input:focus, textarea:focus {
 }
 
 [data-theme="light"] .command-description { color: var(--secondary-600); }
+
+[data-theme="light"] .slash-popover {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: var(--secondary-200);
+}
+
+[data-theme="light"] .slash-item {
+  color: var(--secondary-800);
+}
+
+[data-theme="light"] .slash-item:hover,
+[data-theme="light"] .slash-item.active {
+  background: rgba(14, 165, 233, 0.1);
+}
+
+[data-theme="light"] .slash-item.active {
+  background: rgba(14, 165, 233, 0.15);
+}
+
+[data-theme="light"] .slash-name {
+  color: var(--primary-600);
+}
+
+[data-theme="light"] .slash-description {
+  color: var(--secondary-500);
+}
 
 [data-theme="light"] .help pre {
   background: linear-gradient(135deg, rgba(248, 250, 252, 0.9), rgba(241, 245, 249, 0.9));
