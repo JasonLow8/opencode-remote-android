@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react"
 import { App as CapApp } from "@capacitor/app"
 import { api } from "./api"
-import type { CommandInfo, MessageEnvelope, ServerConfig, SessionView, TodoItem } from "./types"
+import type { AgentInfo, CommandInfo, MessageEnvelope, ServerConfig, SessionView, TodoItem } from "./types"
 import {
   SettingsIcon,
   FolderIcon,
@@ -362,6 +362,8 @@ function App() {
   const [draftConfig, setDraftConfig] = useState<ServerConfig>(config)
   const [connectedVersion, setConnectedVersion] = useState<string>("")
   const [commands, setCommands] = useState<CommandInfo[]>([])
+  const [agents, setAgents] = useState<AgentInfo[]>([])
+  const [currentAgent, setCurrentAgent] = useState<string | null>(null)
   const [helpPage, setHelpPage] = useState<"overview" | "server" | "network" | "troubleshooting" | "commands">(
     "overview"
   )
@@ -451,6 +453,16 @@ function App() {
   const isSessionRunning = Boolean(selectedSession && ["busy", "retry"].includes(selectedSession.status))
   const isWorking = busySending || isSessionRunning
 
+  const sessionInfo = useMemo(() => {
+    const lastUser = [...messages].reverse().find((m) => m.info.role === "user")
+    const lastAssistant = [...messages].reverse().find((m) => m.info.role === "assistant")
+    return {
+      agent: currentAgent ?? lastUser?.info?.agent ?? null,
+      model: lastUser?.info?.model ?? lastAssistant?.info?.model ?? null,
+      mode: lastAssistant?.info?.mode ?? null
+    }
+  }, [messages, currentAgent])
+
   async function openSession(sessionID: string, directory: string) {
     setSelectedID(sessionID)
     setMessages([])
@@ -523,6 +535,16 @@ function App() {
     }
   }
 
+  async function loadAgents() {
+    if (!config.host || !config.password) return
+    try {
+      const list = await api.listAgents(config)
+      setAgents(list)
+    } catch {
+      setAgents([])
+    }
+  }
+
   async function loadSelected(sessionID: string, directory: string) {
     setRuntimeError(null)
     try {
@@ -532,6 +554,11 @@ function App() {
       ])
       setMessages(msg)
       setTodos(todo)
+      const lastUser = [...msg].reverse().find((m) => m.info.role === "user")
+      const agent = lastUser?.info?.agent
+      if (agent) {
+        setCurrentAgent((prev) => prev ?? agent)
+      }
     } catch (err) {
       setRuntimeError((err as Error).message)
     }
@@ -566,12 +593,16 @@ function App() {
         const command = normalized.split(" ")[0]?.trim()
         const args = normalized.slice(command.length).trim()
         if (!command) return
-        const reply = await api.sendCommand(config, selectedSession.id, command, args, selectedSession.directory)
+        const reply = await api.sendCommand(config, selectedSession.id, command, args, selectedSession.directory, currentAgent ?? undefined)
         if (reply && reply.info) {
+          if (reply.info.agent) setCurrentAgent(reply.info.agent)
           setMessages((prev) => [...prev, reply])
         }
       } else {
-        await api.sendPrompt(config, selectedSession.id, text, selectedSession.directory)
+        const reply = await api.sendPrompt(config, selectedSession.id, text, selectedSession.directory, currentAgent ?? undefined)
+        if (reply && reply.info && reply.info.agent) {
+          setCurrentAgent(reply.info.agent)
+        }
       }
       await loadSelected(selectedSession.id, selectedSession.directory)
       await refreshSessions()
@@ -588,6 +619,14 @@ function App() {
     setSlashFilter("")
     setSlashIndex(0)
     setTimeout(() => textareaRef.current?.focus(), 0)
+  }
+
+  function cycleAgent() {
+    if (agents.length === 0) return
+    const current = currentAgent ?? sessionInfo.agent ?? agents[0].name
+    const idx = agents.findIndex((a) => a.name === current)
+    const next = agents[(idx + 1) % agents.length]
+    setCurrentAgent(next.name)
   }
 
   async function deleteSession(sessionID: string) {
@@ -620,6 +659,7 @@ function App() {
     if (!config.host || !config.password) return
     refreshSessions(true).catch(() => undefined)
     loadCommands().catch(() => undefined)
+    loadAgents().catch(() => undefined)
     const timer = setInterval(() => {
       refreshSessions(true).catch(() => undefined)
       if (selectedSession) {
@@ -1069,6 +1109,37 @@ function App() {
                 )}
               </div>
             </div>
+
+            {selectedSession && (sessionInfo.model || sessionInfo.mode || sessionInfo.agent) && (
+              <div className="session-info-bar">
+                {sessionInfo.model && (
+                  <span className="session-info-chip" title="Model">
+                    <span className="chip-label">Model</span>
+                    <span className="chip-value">{sessionInfo.model.providerID}/{sessionInfo.model.modelID}</span>
+                  </span>
+                )}
+                {sessionInfo.mode && (
+                  <span className="session-info-chip" title="Mode">
+                    <span className="chip-label">Mode</span>
+                    <span className="chip-value">{sessionInfo.mode}</span>
+                  </span>
+                )}
+                <span className="session-info-chip" title="Agent">
+                  <span className="chip-label">Agent</span>
+                  <span className="chip-value">{sessionInfo.agent ?? "—"}</span>
+                  {agents.length > 0 && (
+                    <button
+                      type="button"
+                      className="chip-btn"
+                      onClick={cycleAgent}
+                      title="Cycle agent"
+                    >
+                      ↻
+                    </button>
+                  )}
+                </span>
+              </div>
+            )}
 
           <div className="todo-box">
             <div className="todo-header-row">

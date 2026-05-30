@@ -70,6 +70,12 @@ export type MessageEnvelope = {
     id: string
     role: string
     sessionID: string
+    agent?: string
+    mode?: string
+    model?: {
+      providerID: string
+      modelID: string
+    }
     time: {
       created: number
       completed?: number
@@ -151,4 +157,14 @@ export type SessionView = {
 export type CommandInfo = {
   name: string
   description?: string
+}
+
+export type AgentInfo = {
+  name: string
+  description?: string
+  builtIn: boolean
+  model?: {
+    modelID: string
+    providerID: string
+  }
 }
