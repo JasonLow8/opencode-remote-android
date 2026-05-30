@@ -539,6 +539,32 @@ button:disabled {
   margin-top: var(--space-4);
 }
 
+/* Theme switcher */
+.settings-appearance-label {
+  display: block;
+  margin-top: var(--space-3);
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.theme-switcher {
+  display: inline-flex;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--glass-border);
+  margin-top: var(--space-2);
+}
+
+.theme-btn {
+  min-height: 36px;
+  padding: var(--space-2) var(--space-4);
+  border-radius: 0;
+  border: none;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  box-shadow: none;
+}
+
 /* Status and Notices */
 .notice {
   margin-top: var(--space-3);
@@ -1712,3 +1738,264 @@ input:focus, textarea:focus {
 
 .btn-secondary { color: var(--secondary-200); }
 .btn-secondary:hover { color: var(--secondary-100); }
+
+/* Dark theme: theme-btn inactive state */
+.theme-btn {
+  background: rgba(15, 23, 42, 0.6);
+  color: var(--secondary-400);
+}
+
+/* ================================================
+   Light theme overrides
+   ================================================ */
+
+[data-theme="light"] {
+  --glass-bg: rgba(255, 255, 255, 0.88);
+  --glass-border: rgba(203, 213, 225, 0.8);
+  --glass-shadow: rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="light"] body {
+  background: linear-gradient(135deg,
+    #f0f9ff 0%,
+    #e2e8f0 25%,
+    #f8fafc 50%,
+    #e2e8f0 75%,
+    #f0f9ff 100%);
+  color: var(--secondary-800);
+}
+
+[data-theme="light"] h1 {
+  background: linear-gradient(135deg, var(--primary-600), var(--primary-800));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+[data-theme="light"] h2 { color: var(--secondary-800); }
+[data-theme="light"] h3 { color: var(--secondary-700); }
+[data-theme="light"] p  { color: var(--secondary-600); }
+[data-theme="light"] .subtle { color: var(--secondary-500); }
+
+[data-theme="light"] .panel::before {
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.8), transparent);
+}
+
+[data-theme="light"] input,
+[data-theme="light"] textarea {
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--secondary-800);
+  border-color: var(--secondary-300);
+}
+
+[data-theme="light"] input::placeholder,
+[data-theme="light"] textarea::placeholder {
+  color: var(--secondary-400);
+}
+
+[data-theme="light"] input:focus,
+[data-theme="light"] textarea:focus {
+  background: rgba(255, 255, 255, 1);
+  border-color: var(--primary-400);
+}
+
+[data-theme="light"] .btn-secondary {
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--secondary-700);
+  border-color: var(--secondary-200);
+}
+
+[data-theme="light"] .btn-secondary:hover {
+  background: rgba(255, 255, 255, 1);
+  border-color: var(--secondary-300);
+  color: var(--secondary-800);
+}
+
+[data-theme="light"] .mobile-menu-btn {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: var(--secondary-200);
+  color: var(--secondary-700);
+}
+
+[data-theme="light"] .mobile-menu-btn:hover {
+  background: rgba(255, 255, 255, 1);
+  border-color: var(--primary-300);
+  color: var(--primary-600);
+}
+
+[data-theme="light"] .menu-item {
+  background: rgba(255, 255, 255, 0.7);
+  border-color: var(--secondary-200);
+  color: var(--secondary-700);
+}
+
+[data-theme="light"] .menu-item:hover {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: var(--primary-400);
+}
+
+[data-theme="light"] .menu-item small { color: var(--secondary-500); }
+
+[data-theme="light"] .tab-row button {
+  background: rgba(255, 255, 255, 0.7);
+  color: var(--secondary-600);
+  border-color: var(--secondary-200);
+}
+
+[data-theme="light"] .tab-row button:hover {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: var(--primary-300);
+  color: var(--primary-600);
+}
+
+[data-theme="light"] .settings label,
+[data-theme="light"] .settings-appearance-label { color: var(--secondary-700); }
+
+[data-theme="light"] .session-card {
+  background: rgba(255, 255, 255, 0.8);
+  border-color: var(--secondary-200);
+}
+
+[data-theme="light"] .session-card.active {
+  background: linear-gradient(135deg, rgba(224, 242, 254, 0.8), rgba(186, 230, 253, 0.8));
+  border-color: var(--primary-400);
+}
+
+[data-theme="light"] .session-card p { color: var(--secondary-600); }
+[data-theme="light"] .session-card small { color: var(--secondary-500); }
+
+[data-theme="light"] .message {
+  background: rgba(255, 255, 255, 0.8);
+  border-color: var(--secondary-200);
+}
+
+[data-theme="light"] .message.user {
+  background: linear-gradient(135deg, rgba(224, 242, 254, 0.7), rgba(186, 230, 253, 0.7));
+  border-color: var(--primary-400);
+}
+
+[data-theme="light"] .message.assistant {
+  background: linear-gradient(135deg, rgba(248, 250, 252, 0.9), rgba(241, 245, 249, 0.9));
+  border-color: var(--secondary-200);
+}
+
+[data-theme="light"] .message code {
+  background: rgba(241, 245, 249, 0.9);
+  border-color: var(--secondary-300);
+  color: var(--primary-700);
+}
+
+[data-theme="light"] .todo-box {
+  background: linear-gradient(135deg, rgba(248, 250, 252, 0.9), rgba(241, 245, 249, 0.9));
+  border-color: var(--secondary-300);
+}
+
+[data-theme="light"] .todo-toggle-btn {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: var(--secondary-300);
+  color: var(--secondary-700);
+}
+
+[data-theme="light"] .todo-toggle-btn:hover {
+  border-color: var(--primary-400);
+  color: var(--primary-600);
+}
+
+[data-theme="light"] .notice.info {
+  background: rgba(219, 234, 254, 0.8);
+  border-color: var(--primary-300);
+  color: var(--primary-700);
+}
+
+[data-theme="light"] .notice.success {
+  background: rgba(220, 252, 231, 0.8);
+  border-color: var(--success-400);
+  color: var(--success-700);
+}
+
+[data-theme="light"] .notice.error {
+  background: rgba(254, 226, 226, 0.8);
+  border-color: var(--accent-300);
+  color: var(--accent-700);
+}
+
+[data-theme="light"] .running-banner {
+  background: linear-gradient(135deg, rgba(224, 242, 254, 0.7), rgba(186, 230, 253, 0.7));
+  border-color: var(--primary-400);
+  color: var(--primary-700);
+}
+
+[data-theme="light"] .error {
+  color: var(--accent-700);
+  background: rgba(254, 226, 226, 0.7);
+  border-color: var(--accent-300);
+}
+
+[data-theme="light"] .command-card {
+  background: rgba(255, 255, 255, 0.8);
+  border-color: var(--secondary-200);
+}
+
+[data-theme="light"] .command-card:hover {
+  border-color: var(--primary-400);
+}
+
+[data-theme="light"] .command-name {
+  background: linear-gradient(135deg, rgba(224, 242, 254, 0.7), rgba(186, 230, 253, 0.7));
+  border-color: var(--primary-400);
+  color: var(--primary-700);
+}
+
+[data-theme="light"] .command-description { color: var(--secondary-600); }
+
+[data-theme="light"] .help pre {
+  background: linear-gradient(135deg, rgba(248, 250, 252, 0.9), rgba(241, 245, 249, 0.9));
+  border-color: var(--secondary-200);
+  color: var(--secondary-800);
+}
+
+[data-theme="light"] .example-commands pre {
+  background: rgba(248, 250, 252, 0.9);
+  border-color: var(--secondary-200);
+  color: var(--secondary-800);
+}
+
+[data-theme="light"] .pill.busy {
+  background: linear-gradient(135deg, rgba(254, 243, 199, 0.8), rgba(253, 230, 138, 0.8));
+  color: var(--warning-700);
+  border-color: var(--warning-400);
+}
+
+[data-theme="light"] .pill.idle {
+  background: linear-gradient(135deg, rgba(220, 252, 231, 0.8), rgba(187, 247, 208, 0.8));
+  color: var(--success-700);
+  border-color: var(--success-500);
+}
+
+[data-theme="light"] .pill.retry {
+  background: linear-gradient(135deg, rgba(254, 243, 199, 0.8), rgba(253, 230, 138, 0.8));
+  color: var(--warning-700);
+  border-color: var(--warning-400);
+}
+
+[data-theme="light"] .help-note {
+  background: linear-gradient(135deg, rgba(255, 251, 235, 0.8), rgba(254, 243, 199, 0.8));
+  border-color: var(--warning-400);
+  color: var(--warning-700);
+}
+
+[data-theme="light"] .loading-skeleton {
+  background: linear-gradient(90deg, var(--secondary-200) 25%, var(--secondary-100) 50%, var(--secondary-200) 75%);
+}
+
+[data-theme="light"] .session-list::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.04); }
+[data-theme="light"] .session-list::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, 0.12); }
+[data-theme="light"] .session-list::-webkit-scrollbar-thumb:hover { background: rgba(0, 0, 0, 0.2); }
+
+[data-theme="light"] .btn-secondary { color: var(--secondary-700); }
+[data-theme="light"] .btn-secondary:hover { color: var(--secondary-800); }
+
+[data-theme="light"] .theme-btn {
+  background: rgba(241, 245, 249, 0.8);
+  color: var(--secondary-500);
+}

@@ -14,10 +14,13 @@ import {
   TestIcon,
   LoadingIcon,
   RocketIcon,
-  MenuIcon
+  MenuIcon,
+  SunIcon,
+  MoonIcon
 } from "./Icons"
 
 const STORAGE_KEY = "opencode.remote.server"
+const THEME_KEY = "opencode.remote.theme"
 
 const defaultConfig: ServerConfig = {
   host: "",
@@ -90,6 +93,10 @@ function App() {
     } catch {
       return defaultConfig
     }
+  })
+
+  const [theme, setTheme] = useState<"dark" | "light">(() => {
+    return (localStorage.getItem(THEME_KEY) as "dark" | "light") ?? "dark"
   })
 
   const [draftConfig, setDraftConfig] = useState<ServerConfig>(config)
@@ -322,6 +329,11 @@ function App() {
   }, [])
 
   useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme)
+    localStorage.setItem(THEME_KEY, theme)
+  }, [theme])
+
+  useEffect(() => {
     if (!selectedSession) {
       wasRunningRef.current = false
       return
@@ -492,9 +504,31 @@ function App() {
             />
           </label>
           
+          <label className="settings-appearance-label">
+            Appearance
+            <div className="theme-switcher">
+              <button
+                type="button"
+                className={`theme-btn${theme === "dark" ? " active" : ""}`}
+                onClick={() => setTheme("dark")}
+              >
+                <MoonIcon size={14} />
+                Dark
+              </button>
+              <button
+                type="button"
+                className={`theme-btn${theme === "light" ? " active" : ""}`}
+                onClick={() => setTheme("light")}
+              >
+                <SunIcon size={14} />
+                Light
+              </button>
+            </div>
+          </label>
+
           <div className="actions">
-            <button 
-              onClick={saveConfig} 
+            <button
+              onClick={saveConfig}
               disabled={testingConnection}
               className="btn-primary"
             >
