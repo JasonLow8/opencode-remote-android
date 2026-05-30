@@ -667,6 +667,17 @@ button:disabled {
 }
 
 /* Session Cards */
+.pull-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  transition: height 150ms ease;
+  color: var(--secondary-400);
+  font-size: 0.8125rem;
+  gap: var(--space-2);
+}
+
 .session-list {
   margin-top: var(--space-4);
   display: flex;
@@ -775,19 +786,15 @@ button:disabled {
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
-  overflow-y: auto;
-  flex: 1 1 auto;
-  min-height: 260px;
-  max-height: none;
+  overflow: visible;
   margin-top: var(--space-4);
   padding-right: var(--space-2);
-  scroll-behavior: smooth;
 }
 
 .detail {
   display: flex;
   flex-direction: column;
-  min-height: min(72dvh, 960px);
+  overflow: visible;
 }
 
 .message {
@@ -1532,10 +1539,6 @@ button:disabled {
   
   .help-tabs {
     grid-template-columns: repeat(2, 1fr);
-  }
-  
-  .messages {
-    min-height: 45dvh;
   }
   
   .composer {
