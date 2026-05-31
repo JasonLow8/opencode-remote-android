@@ -1574,19 +1574,11 @@ input, textarea, button, select {
   white-space: nowrap;
 }
 
-.tool-toggle {
-  background: none;
-  border: none;
+.tool-chevron {
   color: var(--text-muted);
-  cursor: pointer;
-  padding: 4px;
   font-size: 12px;
-  min-height: auto;
-  box-shadow: none;
-  transition: color var(--transition-fast);
-}
-.tool-toggle:hover {
-  color: var(--accent);
+  margin-left: auto;
+  flex-shrink: 0;
 }
 
 .tool-params {
