@@ -336,8 +336,8 @@ export default function ChatScreen({
         </div>
       )}
 
-      {/* Composer */}
-      {selectedSession && (
+      {/* Composer — hidden during permission prompts since only buttons are needed */}
+      {selectedSession && !isPermission && (
         <Composer
           composer={composer}
           setComposer={setComposer}
