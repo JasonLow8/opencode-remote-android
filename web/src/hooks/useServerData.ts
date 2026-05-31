@@ -39,7 +39,7 @@ export function useServerData(config: ServerConfig) {
   const [loadingSessionID, setLoadingSessionID] = useState<string | null>(null)
   const [runtimeError, setRuntimeError] = useState<string | null>(null)
   const [toast, setToast] = useState<{ type: NoticeType; text: string } | null>(null)
-  const [commands, setCommands] = useState<CommandInfo[]>([])
+  const [commands, setCommands] = useState<CommandInfo[]>(BUILTIN_COMMANDS)
   const [agents, setAgents] = useState<AgentInfo[]>([])
   const [currentAgent, setCurrentAgent] = useState<string | null>(null)
   const [providers, setProviders] = useState<ProviderInfo[]>([])

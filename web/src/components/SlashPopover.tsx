@@ -17,10 +17,8 @@ export default function SlashPopover({ commands, activeIndex, onSelect, onHover 
           key={cmd.name}
           type="button"
           className={`slash-item${index === activeIndex ? " active" : ""}`}
-          onMouseDown={(e) => {
-            e.preventDefault()
-            onSelect(cmd)
-          }}
+          onMouseDown={(e) => { e.preventDefault(); onSelect(cmd) }}
+          onTouchStart={(e) => { e.preventDefault(); onSelect(cmd) }}
           onMouseEnter={() => onHover(index)}
         >
           <span className="slash-name">/{cmd.name}</span>

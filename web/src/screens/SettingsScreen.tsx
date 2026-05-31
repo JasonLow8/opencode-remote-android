@@ -15,6 +15,7 @@ type SettingsScreenProps = {
   saveConfig: () => void
   testConnection: (c: ServerConfig) => Promise<void>
   onOpenHelp: () => void
+  onBack: () => void
 }
 
 export default function SettingsScreen({
@@ -29,7 +30,8 @@ export default function SettingsScreen({
   setPrefs,
   saveConfig,
   testConnection,
-  onOpenHelp
+  onOpenHelp,
+  onBack
 }: SettingsScreenProps) {
   const isConnected = Boolean(connectedVersion)
 
@@ -37,9 +39,13 @@ export default function SettingsScreen({
     <div className="app-screen">
       {/* Nav header */}
       <div className="nav-header" style={{ paddingBottom: "8px" }}>
+        <button className="back-btn" onClick={onBack} aria-label="Back">
+          <i className="ti ti-arrow-left" />
+        </button>
         <div>
           <div className="nav-title">Settings</div>
         </div>
+        <div style={{ width: 34 }} />
       </div>
 
       <div className="settings-scroll">
@@ -175,7 +181,7 @@ export default function SettingsScreen({
           <div className="sfield">
             <div className="sfield-row">
               <div className="sfl">OpenCode Remote</div>
-              <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: "11px", color: "var(--text-dim)" }}>
+              <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: "11px", color: "var(--text-tertiary)" }}>
                 v1.2.0
               </div>
             </div>

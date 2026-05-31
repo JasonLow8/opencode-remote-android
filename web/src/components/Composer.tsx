@@ -1,6 +1,5 @@
 import { useCallback } from "react"
 import type { AgentInfo, CommandInfo } from "../types"
-import SessionMeta from "./SessionMeta"
 import SlashPopover from "./SlashPopover"
 
 type Props = {
@@ -102,6 +101,15 @@ export default function Composer({
         }
       }
       if (e.key === "Enter" && !e.shiftKey) {
+        if (slashOpen) {
+          e.preventDefault()
+          if (filteredCommands.length > 0) {
+            handleSlashSelect(filteredCommands[slashIndex] ?? filteredCommands[0])
+          } else {
+            setSlashOpen(false)
+          }
+          return
+        }
         e.preventDefault()
         send()
       }
@@ -123,18 +131,6 @@ export default function Composer({
 
   return (
     <div className="composer">
-      {/* Session meta — model/variant/agent cycle buttons */}
-      <SessionMeta
-        sessionInfo={sessionInfo}
-        availableVariants={availableVariants}
-        primaryAgents={primaryAgents}
-        currentAgent={currentAgent}
-        currentVariant={currentVariant}
-        cycleAgent={cycleAgent}
-        cycleVariant={cycleVariant}
-        agents={agents}
-      />
-
       {/* Slash command popover */}
       {slashOpen && filteredCommands.length > 0 && (
         <SlashPopover
@@ -175,8 +171,30 @@ export default function Composer({
         {(modelLabel || variantLabel || agentLabel) && (
           <div className="cpills">
             {modelLabel && <span className="cpill">{modelLabel}</span>}
-            {variantLabel && <span className="cpill">{variantLabel}</span>}
-            {agentLabel && <span className="cpill">{agentLabel}</span>}
+            {availableVariants.length > 0 && variantLabel && (
+              <button
+                type="button"
+                className={`cpill cpill-btn${currentVariant ? " active" : ""}`}
+                onClick={cycleVariant}
+                title="Tap to cycle variant"
+              >
+                {variantLabel} ↻
+              </button>
+            )}
+            {variantLabel && availableVariants.length === 0 && (
+              <span className="cpill">{variantLabel}</span>
+            )}
+            {agentLabel && (
+              <button
+                type="button"
+                className={`cpill cpill-btn${currentAgent ? " active" : ""}`}
+                onClick={primaryAgents.length > 0 ? cycleAgent : undefined}
+                title={primaryAgents.length > 0 ? "Tap to cycle agent" : undefined}
+                disabled={primaryAgents.length === 0}
+              >
+                {agentLabel} ↻
+              </button>
+            )}
           </div>
         )}
       </div>

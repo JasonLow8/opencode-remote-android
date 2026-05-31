@@ -78,9 +78,10 @@ export function useChat(params: {
     setRuntimeError(null)
     try {
       if (text.startsWith("/")) {
-        const normalized = text.slice(1)
-        const command = normalized.split(" ")[0]?.trim()
-        const args = normalized.slice(command.length).trim()
+        const normalized = text.slice(1).trim()
+        const spaceIdx = normalized.indexOf(" ")
+        const command = spaceIdx === -1 ? normalized : normalized.slice(0, spaceIdx)
+        const args = spaceIdx === -1 ? "" : normalized.slice(spaceIdx + 1).trim()
         if (!command) return
         if (command === "new") {
           setBusySending(false)

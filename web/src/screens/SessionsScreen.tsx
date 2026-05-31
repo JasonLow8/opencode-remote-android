@@ -16,6 +16,7 @@ type SessionsScreenProps = {
   serverDirectory: string
   runtimeError: string | null
   refreshSessions: (silent?: boolean) => Promise<void>
+  onOpenSettings: () => void
 }
 
 export default function SessionsScreen({
@@ -29,7 +30,8 @@ export default function SessionsScreen({
   setNewSessionFolder,
   createSession,
   runtimeError,
-  refreshSessions
+  refreshSessions,
+  onOpenSettings
 }: SessionsScreenProps) {
   const [pullDelta, setPullDelta] = useState(0)
   const [isPullRefreshing, setIsPullRefreshing] = useState(false)
@@ -108,6 +110,22 @@ export default function SessionsScreen({
             {config.host} · {connected ? "connected" : "offline"}
           </div>
         </div>
+        <div style={{ display: "flex", gap: 8 }}>
+          <button
+            className="nav-action"
+            aria-label="New session"
+            onClick={() => { createSession().catch(() => undefined) }}
+          >
+            <i className="ti ti-plus" />
+          </button>
+          <button
+            className="nav-action"
+            aria-label="Settings"
+            onClick={onOpenSettings}
+          >
+            <i className="ti ti-settings" />
+          </button>
+        </div>
       </div>
 
       {/* Pull-to-refresh indicator */}
@@ -130,19 +148,6 @@ export default function SessionsScreen({
             ↓ Pull to refresh
           </span>
         )}
-      </div>
-
-      {/* New session row */}
-      <div className="new-row">
-        <input
-          className="new-input"
-          placeholder="~/projects/new-app (optional)"
-          value={newSessionFolder}
-          onChange={(e) => setNewSessionFolder(e.target.value)}
-        />
-        <button className="new-btn" onClick={() => { createSession().catch(() => undefined) }}>
-          <i className="ti ti-plus"></i>New
-        </button>
       </div>
 
       {/* Search row */}

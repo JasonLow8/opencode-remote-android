@@ -4,11 +4,9 @@ import { useServerConfig } from "./hooks/useServerConfig"
 import { useServerData } from "./hooks/useServerData"
 import { useChat } from "./hooks/useChat"
 import SessionsScreen from "./screens/SessionsScreen"
-import NewScreen from "./screens/NewScreen"
 import ChatScreen from "./screens/ChatScreen"
 import SettingsScreen from "./screens/SettingsScreen"
 import HelpScreen from "./screens/HelpScreen"
-import BottomTabBar from "./components/BottomTabBar"
 
 function App() {
   const sv = useServerConfig()
@@ -34,7 +32,7 @@ function App() {
     prefs: sv.prefs,
   })
 
-  const [tab, setTab] = useState<"sessions" | "new" | "settings">(() =>
+  const [tab, setTab] = useState<"sessions" | "settings">(() =>
     sv.hasConfiguredServer ? "sessions" : "settings",
   )
   const [chatOpen, setChatOpen] = useState(false)
@@ -157,14 +155,7 @@ function App() {
               serverDirectory={sd.serverDirectory}
               runtimeError={sd.runtimeError}
               refreshSessions={sd.refreshSessions}
-            />
-          )}
-          {tab === "new" && (
-            <NewScreen
-              newSessionFolder={sd.newSessionFolder}
-              setNewSessionFolder={sd.setNewSessionFolder}
-              serverDirectory={sd.serverDirectory}
-              createSession={handleCreateSession}
+              onOpenSettings={() => setTab("settings")}
             />
           )}
           {tab === "settings" && (
@@ -181,9 +172,9 @@ function App() {
               saveConfig={handleSaveConfig}
               testConnection={sv.testConnection}
               onOpenHelp={() => setHelpOpen(true)}
+              onBack={() => setTab("sessions")}
             />
           )}
-          <BottomTabBar tab={tab} onTabChange={setTab} />
         </>
       )}
     </div>
