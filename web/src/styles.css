@@ -77,6 +77,7 @@
   --text-tertiary: #9a8f7e;
   --text-muted: #b0a898;
   --text-dim: #c8c0b0;
+  --online-color: #1a8040;
 
   /* Toggle component */
   --toggle-track-off: var(--border-alt);
@@ -250,7 +251,7 @@ input, textarea, button, select {
 
 .nav-sub {
   font-size: 11px;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   font-family: var(--font-mono);
   margin-top: 3px;
 }
@@ -374,7 +375,7 @@ input, textarea, button, select {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  color: var(--text-tertiary);
+  color: var(--text-secondary);
   margin: 0 2px 8px;
 }
 
@@ -419,7 +420,7 @@ input, textarea, button, select {
   box-shadow: 0 0 7px rgba(200, 160, 32, 0.33);
 }
 .sdot.gray {
-  background: var(--text-dim);
+  background: var(--text-tertiary);
 }
 
 .scard-info {
@@ -446,7 +447,7 @@ input, textarea, button, select {
 .scard-path {
   font-size: 10px;
   font-family: var(--font-mono);
-  color: var(--text-tertiary);
+  color: var(--text-secondary);
   margin-bottom: 6px;
   white-space: nowrap;
   overflow: hidden;
@@ -2426,6 +2427,7 @@ input, textarea, button, select {
   --text-tertiary: #4a6080;
   --text-muted: #2a3450;
   --text-dim: #1e2840;
+  --online-color: #30c060;
 
   --text-running: #7be8b8;
   --text-ask: #f0c060;

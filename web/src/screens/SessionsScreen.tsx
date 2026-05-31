@@ -103,7 +103,7 @@ export default function SessionsScreen({
         <div>
           <div className="nav-title">Sessions</div>
           <div className="nav-sub">
-            {config.host} · {connected ? "connected" : "offline"}
+            {config.host} · <span style={{ color: connected ? "var(--online-color)" : "var(--danger)" }}>{connected ? "online" : "offline"}</span>
           </div>
         </div>
         <div style={{ display: "flex", gap: 8 }}>
