@@ -1060,6 +1060,10 @@ input, textarea, button, select {
   text-align: right;
   transition: border-color var(--transition-fast);
 }
+.sfield-input::placeholder {
+  color: var(--text-muted);
+  opacity: 1;
+}
 .sfield-input:focus {
   border-color: var(--accent);
 }
