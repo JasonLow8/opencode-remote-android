@@ -66,6 +66,30 @@ export function useChat(params: {
 
   // ── Actions ─────────────────────────────────────────────────────
 
+  async function replyPermission(requestID: string, reply: "once" | "always" | "reject") {
+    if (!selectedSession) return
+    try {
+      setRuntimeError(null)
+      await api.replyPermission(config, requestID, selectedSession.directory, reply)
+      await refreshSessions()
+      await loadSelected(selectedSession.id, selectedSession.directory)
+    } catch (err) {
+      setRuntimeError((err as Error).message)
+    }
+  }
+
+  async function replyQuestion(requestID: string, text: string) {
+    if (!selectedSession) return
+    try {
+      setRuntimeError(null)
+      await api.replyQuestion(config, requestID, selectedSession.directory, [text])
+      await refreshSessions()
+      await loadSelected(selectedSession.id, selectedSession.directory)
+    } catch (err) {
+      setRuntimeError((err as Error).message)
+    }
+  }
+
   async function send() {
     if (!selectedSession) return
     const text = composer.trim()
@@ -73,6 +97,12 @@ export function useChat(params: {
     setComposer("")
     setSlashOpen(false)
     if (textareaRef.current) textareaRef.current.style.height = "auto"
+
+    // If awaiting a question reply, route through the question endpoint
+    if (selectedSession.status === "question" && selectedSession.requestID) {
+      await replyQuestion(selectedSession.requestID, text)
+      return
+    }
 
     setBusySending(true)
     setRuntimeError(null)
@@ -240,6 +270,8 @@ export function useChat(params: {
     cycleAgent,
     cycleVariant,
     abortSession,
-    selectModel
+    selectModel,
+    replyPermission,
+    replyQuestion
   }
 }

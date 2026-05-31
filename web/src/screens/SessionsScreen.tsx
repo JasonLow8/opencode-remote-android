@@ -119,7 +119,7 @@ export default function SessionsScreen({
   }, [refreshSessions])
 
   const runningSessions = filteredSessions.filter(
-    (s) => s.status === "busy" || s.status === "retry" || s.status === "ask"
+    (s) => s.status === "busy" || s.status === "retry" || s.status === "ask" || s.status === "question" || s.status === "permission"
   )
   const recentSessions = filteredSessions.filter(
     (s) => s.status === "idle"
