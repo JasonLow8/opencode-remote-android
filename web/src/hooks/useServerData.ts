@@ -55,8 +55,10 @@ export function useServerData(config: ServerConfig) {
   )
 
   const filteredSessions = useMemo(() => {
-    const text = query.trim().toLowerCase()
+    const isSubagent = (title: string) => /\(@\S+ subagent\)$/i.test(title)
     return sessions.filter((session) => {
+      if (isSubagent(session.title)) return false
+      const text = query.trim().toLowerCase()
       if (!text) return true
       return session.title.toLowerCase().includes(text) || session.directory.toLowerCase().includes(text)
     })
