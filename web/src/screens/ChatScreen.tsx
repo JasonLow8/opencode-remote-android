@@ -1,4 +1,4 @@
-import type { MessageEnvelope, SessionView, TodoItem, CommandInfo, ProviderInfo } from "../types"
+import type { AgentInfo, MessageEnvelope, SessionView, TodoItem, CommandInfo, ProviderInfo } from "../types"
 import { renderInline, toDisplayLines } from "../components/message/messageHelpers"
 import ToolPartDisplay from "../components/message/ToolPart"
 import ReasoningPartDisplay from "../components/message/ReasoningPart"
@@ -57,7 +57,14 @@ type ChatScreenProps = {
   messagesRef: React.RefObject<HTMLDivElement | null>
   textareaRef: React.RefObject<HTMLTextAreaElement | null>
   providers: ProviderInfo[]
+  connectedProviderIDs: string[]
   selectModel: (modelID: string) => Promise<void>
+  currentVariant: string | null
+  availableVariants: string[]
+  cycleVariant: () => void
+  currentAgent: string | null
+  primaryAgents: AgentInfo[]
+  cycleAgent: () => void
 }
 
 export default function ChatScreen({
@@ -87,7 +94,14 @@ export default function ChatScreen({
   messagesRef,
   textareaRef,
   providers,
-  selectModel
+  connectedProviderIDs,
+  selectModel,
+  currentVariant,
+  availableVariants,
+  cycleVariant,
+  currentAgent,
+  primaryAgents,
+  cycleAgent
 }: ChatScreenProps) {
   const chatSub = selectedSession?.directory ?? ""
 
@@ -315,8 +329,15 @@ export default function ChatScreen({
           isWorking={isWorking}
           abortSession={abortSession}
           providers={providers}
+          connectedProviderIDs={connectedProviderIDs}
           currentModel={sessionInfo.model}
           selectModel={selectModel}
+          currentVariant={currentVariant}
+          availableVariants={availableVariants}
+          cycleVariant={cycleVariant}
+          currentAgent={currentAgent}
+          primaryAgents={primaryAgents}
+          cycleAgent={cycleAgent}
         />
       )}
     </div>

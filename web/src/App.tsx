@@ -126,7 +126,14 @@ function App() {
           messagesRef={chat.messagesRef}
           textareaRef={chat.textareaRef}
           providers={sd.providers}
+          connectedProviderIDs={sd.connectedProviderIDs}
           selectModel={chat.selectModel}
+          currentVariant={sd.currentVariant}
+          availableVariants={sd.availableVariants}
+          cycleVariant={chat.cycleVariant}
+          currentAgent={sd.currentAgent}
+          primaryAgents={sd.primaryAgents}
+          cycleAgent={chat.cycleAgent}
         />
       ) : helpOpen ? (
         <HelpScreen
