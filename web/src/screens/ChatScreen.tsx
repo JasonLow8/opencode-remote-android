@@ -1,4 +1,4 @@
-import type { MessageEnvelope, SessionView, TodoItem, AgentInfo, CommandInfo } from "../types"
+import type { MessageEnvelope, SessionView, TodoItem, AgentInfo, CommandInfo, ProviderInfo } from "../types"
 import { renderInline, toDisplayLines } from "../components/message/messageHelpers"
 import ToolPartDisplay from "../components/message/ToolPart"
 import ReasoningPartDisplay from "../components/message/ReasoningPart"
@@ -62,6 +62,8 @@ type ChatScreenProps = {
   textareaRef: React.RefObject<HTMLTextAreaElement | null>
   currentAgent: string | null
   currentVariant: string | null
+  providers: ProviderInfo[]
+  selectModel: (modelID: string) => Promise<void>
 }
 
 export default function ChatScreen({
@@ -95,7 +97,9 @@ export default function ChatScreen({
   messagesRef,
   textareaRef,
   currentAgent,
-  currentVariant
+  currentVariant,
+  providers,
+  selectModel
 }: ChatScreenProps) {
   const chatSub = selectedSession?.directory ?? ""
 
@@ -322,6 +326,9 @@ export default function ChatScreen({
           textareaRef={textareaRef}
           isWorking={isWorking}
           abortSession={abortSession}
+          providers={providers}
+          currentModel={sessionInfo.model}
+          selectModel={selectModel}
         />
       )}
     </div>

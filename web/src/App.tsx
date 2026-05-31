@@ -131,6 +131,8 @@ function App() {
           textareaRef={chat.textareaRef}
           currentAgent={sd.currentAgent}
           currentVariant={sd.currentVariant}
+          providers={sd.providers}
+          selectModel={chat.selectModel}
         />
       ) : helpOpen ? (
         <HelpScreen

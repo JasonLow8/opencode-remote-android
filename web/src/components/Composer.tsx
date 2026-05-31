@@ -1,6 +1,7 @@
-import { useCallback } from "react"
-import type { CommandInfo } from "../types"
+import { useCallback, useState } from "react"
+import type { CommandInfo, ProviderInfo } from "../types"
 import SlashPopover from "./SlashPopover"
+import ModelPicker from "./ModelPicker"
 
 type Props = {
   composer: string
@@ -17,6 +18,9 @@ type Props = {
   filteredCommands: CommandInfo[]
   handleSlashSelect: (cmd: CommandInfo) => void
   textareaRef: React.RefObject<HTMLTextAreaElement | null>
+  providers: ProviderInfo[]
+  currentModel: { providerID: string; modelID: string } | null
+  selectModel: (modelID: string) => Promise<void>
 }
 
 export default function Composer({
@@ -32,8 +36,13 @@ export default function Composer({
   setSlashIndex,
   filteredCommands,
   handleSlashSelect,
-  textareaRef
+  textareaRef,
+  providers,
+  currentModel,
+  selectModel
 }: Props) {
+  const [modelPickerOpen, setModelPickerOpen] = useState(false)
+
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
       const el = e.target
@@ -93,8 +102,24 @@ export default function Composer({
     setTimeout(() => setSlashOpen(false), 150)
   }, [setSlashOpen])
 
+  // Find human-readable model name from providers list
+  const modelDisplayName = currentModel
+    ? (providers
+        .find((p) => p.id === currentModel.providerID)
+        ?.models[currentModel.modelID]?.name ?? currentModel.modelID)
+    : null
+
   return (
     <div className="composer">
+      {modelPickerOpen && (
+        <ModelPicker
+          providers={providers}
+          currentModelID={currentModel?.modelID ?? null}
+          onSelect={(id) => { selectModel(id).catch(() => undefined) }}
+          onClose={() => setModelPickerOpen(false)}
+        />
+      )}
+
       {slashOpen && filteredCommands.length > 0 && (
         <SlashPopover
           commands={filteredCommands}
@@ -102,6 +127,18 @@ export default function Composer({
           onSelect={handleSlashSelect}
           onHover={setSlashIndex}
         />
+      )}
+
+      {modelDisplayName && (
+        <button
+          className="model-btn"
+          onClick={() => setModelPickerOpen(true)}
+          title="Switch model"
+        >
+          <i className="ti ti-brain" />
+          {modelDisplayName}
+          <i className="ti ti-chevron-up" />
+        </button>
       )}
 
       <div className="composer-box">
