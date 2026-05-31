@@ -1,14 +1,35 @@
+import { useState } from "react"
 import type { ProviderInfo } from "../types"
 
 type Props = {
   providers: ProviderInfo[]
+  connectedProviderIDs: string[]
   currentModelID: string | null
   onSelect: (modelID: string) => void
   onClose: () => void
 }
 
-export default function ModelPicker({ providers, currentModelID, onSelect, onClose }: Props) {
-  const connected = providers.filter((p) => Object.keys(p.models).length > 0)
+export default function ModelPicker({ providers, connectedProviderIDs, currentModelID, onSelect, onClose }: Props) {
+  const [filter, setFilter] = useState("")
+
+  const filterLower = filter.trim().toLowerCase()
+
+  const connected = providers
+    .filter((p) => connectedProviderIDs.includes(p.id))
+    .map((p) => {
+      const models = filterLower
+        ? Object.fromEntries(
+            Object.entries(p.models).filter(
+              ([id, m]) =>
+                m.name.toLowerCase().includes(filterLower) ||
+                id.toLowerCase().includes(filterLower) ||
+                p.name.toLowerCase().includes(filterLower)
+            )
+          )
+        : p.models
+      return { ...p, models }
+    })
+    .filter((p) => Object.keys(p.models).length > 0)
 
   return (
     <div className="mpicker-overlay" onClick={onClose}>
@@ -18,6 +39,15 @@ export default function ModelPicker({ providers, currentModelID, onSelect, onClo
           <button className="mpicker-close" onClick={onClose} aria-label="Close">
             <i className="ti ti-x" />
           </button>
+        </div>
+        <div className="mpicker-filter-row">
+          <input
+            className="mpicker-filter"
+            placeholder="Filter providers or models…"
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+            autoFocus
+          />
         </div>
         <div className="mpicker-list">
           {connected.map((provider) => (
@@ -39,7 +69,9 @@ export default function ModelPicker({ providers, currentModelID, onSelect, onClo
             </div>
           ))}
           {connected.length === 0 && (
-            <div className="mpicker-empty">No models available</div>
+            <div className="mpicker-empty">
+              {filterLower ? "No matching models" : "No connected providers"}
+            </div>
           )}
         </div>
       </div>

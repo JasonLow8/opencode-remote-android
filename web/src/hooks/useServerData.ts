@@ -43,6 +43,7 @@ export function useServerData(config: ServerConfig) {
   const [agents, setAgents] = useState<AgentInfo[]>([])
   const [currentAgent, setCurrentAgent] = useState<string | null>(null)
   const [providers, setProviders] = useState<ProviderInfo[]>([])
+  const [connectedProviderIDs, setConnectedProviderIDs] = useState<string[]>([])
   const [currentVariant, setCurrentVariant] = useState<string | null>(null)
   const [serverDirectory, setServerDirectory] = useState<string>("")
 
@@ -180,8 +181,10 @@ export function useServerData(config: ServerConfig) {
     try {
       const resp = await api.listProviders(config)
       setProviders(resp.all)
+      setConnectedProviderIDs(resp.connected ?? [])
     } catch {
       setProviders([])
+      setConnectedProviderIDs([])
     }
   }, [config])
 
@@ -301,6 +304,8 @@ export function useServerData(config: ServerConfig) {
     setCurrentAgent,
     providers,
     setProviders,
+    connectedProviderIDs,
+    setConnectedProviderIDs,
     currentVariant,
     setCurrentVariant,
     serverDirectory,

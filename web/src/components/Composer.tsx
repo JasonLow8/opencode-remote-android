@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react"
-import type { CommandInfo, ProviderInfo } from "../types"
+import type { AgentInfo, CommandInfo, ProviderInfo } from "../types"
 import SlashPopover from "./SlashPopover"
 import ModelPicker from "./ModelPicker"
 
@@ -19,8 +19,15 @@ type Props = {
   handleSlashSelect: (cmd: CommandInfo) => void
   textareaRef: React.RefObject<HTMLTextAreaElement | null>
   providers: ProviderInfo[]
+  connectedProviderIDs: string[]
   currentModel: { providerID: string; modelID: string } | null
   selectModel: (modelID: string) => Promise<void>
+  currentVariant: string | null
+  availableVariants: string[]
+  cycleVariant: () => void
+  currentAgent: string | null
+  primaryAgents: AgentInfo[]
+  cycleAgent: () => void
 }
 
 export default function Composer({
@@ -38,8 +45,15 @@ export default function Composer({
   handleSlashSelect,
   textareaRef,
   providers,
+  connectedProviderIDs,
   currentModel,
-  selectModel
+  selectModel,
+  currentVariant,
+  availableVariants,
+  cycleVariant,
+  currentAgent,
+  primaryAgents,
+  cycleAgent
 }: Props) {
   const [modelPickerOpen, setModelPickerOpen] = useState(false)
 
@@ -102,18 +116,20 @@ export default function Composer({
     setTimeout(() => setSlashOpen(false), 150)
   }, [setSlashOpen])
 
-  // Find human-readable model name from providers list
   const modelDisplayName = currentModel
     ? (providers
         .find((p) => p.id === currentModel.providerID)
         ?.models[currentModel.modelID]?.name ?? currentModel.modelID)
     : null
 
+  const agentDisplayName = currentAgent ?? primaryAgents[0]?.name ?? null
+
   return (
     <div className="composer">
       {modelPickerOpen && (
         <ModelPicker
           providers={providers}
+          connectedProviderIDs={connectedProviderIDs}
           currentModelID={currentModel?.modelID ?? null}
           onSelect={(id) => { selectModel(id).catch(() => undefined) }}
           onClose={() => setModelPickerOpen(false)}
@@ -129,17 +145,38 @@ export default function Composer({
         />
       )}
 
-      {modelDisplayName && (
+      <div className="composer-meta">
         <button
-          className="model-btn"
+          className="cmeta-btn"
           onClick={() => setModelPickerOpen(true)}
           title="Switch model"
         >
           <i className="ti ti-brain" />
-          {modelDisplayName}
-          <i className="ti ti-chevron-up" />
+          <span>{modelDisplayName ?? "no model"}</span>
         </button>
-      )}
+
+        {availableVariants.length > 0 && (
+          <button
+            className="cmeta-btn"
+            onClick={cycleVariant}
+            title="Cycle variant"
+          >
+            <i className="ti ti-sparkles" />
+            <span>{currentVariant ?? "auto"}</span>
+          </button>
+        )}
+
+        {primaryAgents.length > 0 && agentDisplayName && (
+          <button
+            className="cmeta-btn"
+            onClick={cycleAgent}
+            title="Cycle agent"
+          >
+            <i className="ti ti-robot" />
+            <span>{agentDisplayName}</span>
+          </button>
+        )}
+      </div>
 
       <div className="composer-box">
         <textarea
