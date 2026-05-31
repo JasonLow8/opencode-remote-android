@@ -98,9 +98,12 @@ export function useChat(params: {
     setSlashOpen(false)
     if (textareaRef.current) textareaRef.current.style.height = "auto"
 
-    // If awaiting a question reply, route through the question endpoint
-    if (selectedSession.status === "question" && selectedSession.requestID) {
-      await replyQuestion(selectedSession.requestID, text)
+    // If awaiting a question reply, route through the question endpoint.
+    // Covers both "question" (specific) and "ask" (generic) when a requestID is present.
+    // "permission" is handled by buttons only — user shouldn't be typing.
+    const isQuestionState = (selectedSession.status === "question" || selectedSession.status === "ask") && selectedSession.requestID
+    if (isQuestionState) {
+      await replyQuestion(selectedSession.requestID!, text)
       return
     }
 
