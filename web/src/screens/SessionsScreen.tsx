@@ -10,8 +10,6 @@ type SessionsScreenProps = {
   onOpenSession: (id: string, directory: string) => void
   query: string
   setQuery: (q: string) => void
-  newSessionFolder: string
-  setNewSessionFolder: (f: string) => void
   createSession: () => Promise<void>
   serverDirectory: string
   runtimeError: string | null
@@ -26,8 +24,6 @@ export default function SessionsScreen({
   onOpenSession,
   query,
   setQuery,
-  newSessionFolder,
-  setNewSessionFolder,
   createSession,
   runtimeError,
   refreshSessions,

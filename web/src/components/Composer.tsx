@@ -19,7 +19,6 @@ type Props = {
   currentVariant: string | null
   cycleAgent: () => void
   cycleVariant: () => void
-  agents: AgentInfo[]
   slashOpen: boolean
   setSlashOpen: (v: boolean) => void
   slashFilter: string
@@ -44,7 +43,6 @@ export default function Composer({
   currentVariant,
   cycleAgent,
   cycleVariant,
-  agents,
   slashOpen,
   setSlashOpen,
   setSlashFilter,

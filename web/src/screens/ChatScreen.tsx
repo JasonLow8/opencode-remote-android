@@ -40,7 +40,6 @@ type ChatScreenProps = {
   sessionInfo: SessionInfo
   availableVariants: string[]
   primaryAgents: AgentInfo[]
-  agents: AgentInfo[]
   runtimeError: string | null
   onBack: () => void
   isWorking: boolean
@@ -76,7 +75,6 @@ export default function ChatScreen({
   sessionInfo,
   availableVariants,
   primaryAgents,
-  agents,
   runtimeError,
   onBack,
   isWorking,
@@ -323,7 +321,6 @@ export default function ChatScreen({
           sessionInfo={sessionInfo}
           availableVariants={availableVariants}
           primaryAgents={primaryAgents}
-          agents={agents}
           textareaRef={textareaRef}
           currentAgent={currentAgent}
           currentVariant={currentVariant}

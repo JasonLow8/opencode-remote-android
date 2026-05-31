@@ -107,7 +107,6 @@ function App() {
           sessionInfo={sd.sessionInfo}
           availableVariants={sd.availableVariants}
           primaryAgents={sd.primaryAgents}
-          agents={sd.agents}
           runtimeError={sd.runtimeError}
           onBack={() => {
             setChatOpen(false)
@@ -149,8 +148,6 @@ function App() {
               onOpenSession={openSession}
               query={sd.query}
               setQuery={sd.setQuery}
-              newSessionFolder={sd.newSessionFolder}
-              setNewSessionFolder={sd.setNewSessionFolder}
               createSession={handleCreateSession}
               serverDirectory={sd.serverDirectory}
               runtimeError={sd.runtimeError}
