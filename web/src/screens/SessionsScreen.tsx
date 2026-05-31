@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from "react"
+import { useRef, useState, useEffect, useMemo } from "react"
 import type { SessionView } from "../types"
 import SessionCard from "../components/SessionCard"
 
@@ -118,12 +118,52 @@ export default function SessionsScreen({
     }
   }, [refreshSessions])
 
-  const runningSessions = filteredSessions.filter(
-    (s) => s.status === "busy" || s.status === "retry" || s.status === "ask"
-  )
-  const recentSessions = filteredSessions.filter(
-    (s) => s.status === "idle"
-  )
+  const groupedSections = useMemo(() => {
+    const now = new Date()
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
+    const startOfYesterday = startOfToday - 24 * 60 * 60 * 1000
+    const dayOfWeek = (now.getDay() + 6) % 7 // Monday=0
+    const startOfWeek = startOfToday - dayOfWeek * 24 * 60 * 60 * 1000
+    const startOfLastWeek = startOfWeek - 7 * 24 * 60 * 60 * 1000
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime()
+    const normalizeTime = (updated: number) => (updated < 1_000_000_000_000 ? updated * 1000 : updated)
+
+    const busy = filteredSessions.filter((s) => s.status === "busy" || s.status === "retry")
+    const actionRequired = filteredSessions.filter((s) => s.status === "ask")
+    const rest = filteredSessions.filter((s) => s.status !== "busy" && s.status !== "retry" && s.status !== "ask")
+
+    const sections: Array<{ label: string; sessions: SessionView[] }> = []
+    if (busy.length > 0) sections.push({ label: `Busy · ${busy.length}`, sessions: busy })
+    if (actionRequired.length > 0) sections.push({ label: `Action required · ${actionRequired.length}`, sessions: actionRequired })
+
+    const today = rest.filter((s) => normalizeTime(s.updated) >= startOfToday)
+    const yesterday = rest.filter((s) => {
+      const t = normalizeTime(s.updated)
+      return t >= startOfYesterday && t < startOfToday
+    })
+    const thisWeek = rest.filter((s) => {
+      const t = normalizeTime(s.updated)
+      return t >= startOfWeek && t < startOfYesterday
+    })
+    const lastWeek = rest.filter((s) => {
+      const t = normalizeTime(s.updated)
+      return t >= startOfLastWeek && t < startOfWeek
+    })
+    const thisMonth = rest.filter((s) => {
+      const t = normalizeTime(s.updated)
+      return t >= startOfMonth && t < startOfLastWeek
+    })
+    const older = rest.filter((s) => normalizeTime(s.updated) < startOfMonth)
+
+    if (today.length > 0) sections.push({ label: `Today · ${today.length}`, sessions: today })
+    if (yesterday.length > 0) sections.push({ label: `Yesterday · ${yesterday.length}`, sessions: yesterday })
+    if (thisWeek.length > 0) sections.push({ label: `This week · ${thisWeek.length}`, sessions: thisWeek })
+    if (lastWeek.length > 0) sections.push({ label: `Last week · ${lastWeek.length}`, sessions: lastWeek })
+    if (thisMonth.length > 0) sections.push({ label: `This month · ${thisMonth.length}`, sessions: thisMonth })
+    if (older.length > 0) sections.push({ label: `Older · ${older.length}`, sessions: older })
+
+    return sections
+  }, [filteredSessions])
 
   return (
     <div className="app-screen">
@@ -219,30 +259,12 @@ export default function SessionsScreen({
           </div>
         ) : (
           <>
-            {/* Running section */}
-            {runningSessions.length > 0 && (
-              <>
-                <div className="list-section">Running · {runningSessions.length}</div>
-                {runningSessions.map((session) => (
-                  <SessionCard
-                    key={session.id}
-                    session={session}
-                    selectionMode={selectionMode}
-                    selected={selectedIds.has(session.id)}
-                    onLongPress={() => enterSelectionMode(session.id)}
-                    onClick={() => selectionMode ? toggleSelection(session.id) : onOpenSession(session.id, session.directory)}
-                  />
-                ))}
-              </>
-            )}
-
-            {/* Recent section */}
-            {recentSessions.length > 0 && (
-              <>
-                <div className="list-section" style={{ marginTop: runningSessions.length > 0 ? "12px" : 0 }}>
-                  Recent
+            {groupedSections.map((section, index) => (
+              <div key={section.label}>
+                <div className="list-section" style={{ marginTop: index > 0 ? "12px" : 0 }}>
+                  {section.label}
                 </div>
-                {recentSessions.map((session) => (
+                {section.sessions.map((session) => (
                   <SessionCard
                     key={session.id}
                     session={session}
@@ -252,8 +274,8 @@ export default function SessionsScreen({
                     onClick={() => selectionMode ? toggleSelection(session.id) : onOpenSession(session.id, session.directory)}
                   />
                 ))}
-              </>
-            )}
+              </div>
+            ))}
           </>
         )}
       </div>
