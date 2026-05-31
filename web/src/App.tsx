@@ -41,7 +41,7 @@ function App() {
   const connected = sv.connectedVersion !== ""
 
   const isWorking = Boolean(
-    sd.selectedSession && ["busy", "retry"].includes(sd.selectedSession.status),
+    sd.selectedSession && ["busy", "retry", "ask"].includes(sd.selectedSession.status),
   )
 
   function openSession(id: string, dir: string) {

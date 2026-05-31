@@ -106,6 +106,7 @@ export default function ChatScreen({
   const chatSub = chatSubParts.join(" · ")
 
   const isRunning = selectedSession?.status === "busy" || selectedSession?.status === "retry"
+  const isAsking = selectedSession?.status === "ask"
 
   return (
     <div className="app-screen">
@@ -121,10 +122,10 @@ export default function ChatScreen({
           {chatSub && <div className="chat-hsub">{chatSub}</div>}
         </div>
         <div className="chat-hbadges">
-          {isRunning && (
-            <div className="running-pill">
-              <div className="rpulse"></div>
-              {selectedSession?.status === "ask" ? "awaiting you" : selectedSession?.status === "retry" ? "retrying" : "running"}
+          {(isRunning || isAsking) && (
+            <div className={`running-pill${isAsking ? " ask" : ""}`}>
+              <div className={`rpulse${isAsking ? " ask" : ""}`}></div>
+              {isAsking ? "awaiting you" : selectedSession?.status === "retry" ? "retrying" : "running"}
             </div>
           )}
           {isWorking && (
@@ -228,7 +229,7 @@ export default function ChatScreen({
         )}
 
         {/* Typing indicator */}
-        {isRunning && renderedMessages.length > 0 && (
+        {isRunning && !isAsking && renderedMessages.length > 0 && (
           <div className="brow ai">
             <div className="avatar ai">AI</div>
             <div className="bcol">
@@ -242,6 +243,14 @@ export default function ChatScreen({
           </div>
         )}
       </div>
+
+      {/* Permission prompt banner */}
+      {isAsking && (
+        <div className="ask-banner">
+          <i className="ti ti-help-circle"></i>
+          <span>{selectedSession?.statusMessage ?? "Opencode is awaiting your response"}</span>
+        </div>
+      )}
 
       {/* Todo box (collapsible) */}
       {todos.length > 0 && (
