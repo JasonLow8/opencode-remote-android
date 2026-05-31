@@ -626,7 +626,7 @@ input, textarea, button, select {
 .chat-hsub {
   font-size: 10px;
   font-family: var(--font-mono);
-  color: var(--text-muted);
+  color: var(--text-secondary);
 }
 
 .chat-hbadges {
@@ -774,7 +774,7 @@ input, textarea, button, select {
   font-family: var(--font-mono);
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  color: var(--text-muted);
+  color: var(--text-tertiary);
   padding: 0 2px;
 }
 .brow.user .brole {
@@ -1402,11 +1402,19 @@ input, textarea, button, select {
   box-shadow: var(--shadow-lg);
   max-height: min(240px, 40vh);
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   z-index: var(--z-dropdown);
   padding: 4px;
 }
 .slash-popover::-webkit-scrollbar {
-  display: none;
+  width: 4px;
+}
+.slash-popover::-webkit-scrollbar-track {
+  background: transparent;
+}
+.slash-popover::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 2px;
 }
 
 .slash-item {

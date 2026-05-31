@@ -97,13 +97,7 @@ export default function ChatScreen({
   currentAgent,
   currentVariant
 }: ChatScreenProps) {
-  // Build chat header sub info
-  const chatSubParts: string[] = []
-  if (selectedSession?.directory) chatSubParts.push(selectedSession.directory)
-  if (sessionInfo.model) chatSubParts.push(`${sessionInfo.model.providerID}/${sessionInfo.model.modelID}`)
-  if (sessionInfo.variant) chatSubParts.push(sessionInfo.variant)
-  if (sessionInfo.agent) chatSubParts.push(sessionInfo.agent)
-  const chatSub = chatSubParts.join(" · ")
+  const chatSub = selectedSession?.directory ?? ""
 
   const isRunning = selectedSession?.status === "busy" || selectedSession?.status === "retry"
   const isAsking = selectedSession?.status === "ask"
@@ -325,14 +319,7 @@ export default function ChatScreen({
           setSlashIndex={setSlashIndex}
           filteredCommands={filteredCommands}
           handleSlashSelect={handleSlashSelect}
-          cycleAgent={cycleAgent}
-          cycleVariant={cycleVariant}
-          sessionInfo={sessionInfo}
-          availableVariants={availableVariants}
-          primaryAgents={primaryAgents}
           textareaRef={textareaRef}
-          currentAgent={currentAgent}
-          currentVariant={currentVariant}
           isWorking={isWorking}
           abortSession={abortSession}
         />
