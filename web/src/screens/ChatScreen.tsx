@@ -1,4 +1,4 @@
-import type { MessageEnvelope, SessionView, TodoItem, AgentInfo, CommandInfo } from "../types"
+import type { MessageEnvelope, SessionView, TodoItem, AgentInfo, CommandInfo, ProviderInfo } from "../types"
 import { renderInline, toDisplayLines } from "../components/message/messageHelpers"
 import ToolPartDisplay from "../components/message/ToolPart"
 import ReasoningPartDisplay from "../components/message/ReasoningPart"
@@ -62,6 +62,8 @@ type ChatScreenProps = {
   textareaRef: React.RefObject<HTMLTextAreaElement | null>
   currentAgent: string | null
   currentVariant: string | null
+  providers: ProviderInfo[]
+  selectModel: (modelID: string) => Promise<void>
 }
 
 export default function ChatScreen({
@@ -95,17 +97,14 @@ export default function ChatScreen({
   messagesRef,
   textareaRef,
   currentAgent,
-  currentVariant
+  currentVariant,
+  providers,
+  selectModel
 }: ChatScreenProps) {
-  // Build chat header sub info
-  const chatSubParts: string[] = []
-  if (selectedSession?.directory) chatSubParts.push(selectedSession.directory)
-  if (sessionInfo.model) chatSubParts.push(`${sessionInfo.model.providerID}/${sessionInfo.model.modelID}`)
-  if (sessionInfo.variant) chatSubParts.push(sessionInfo.variant)
-  if (sessionInfo.agent) chatSubParts.push(sessionInfo.agent)
-  const chatSub = chatSubParts.join(" · ")
+  const chatSub = selectedSession?.directory ?? ""
 
   const isRunning = selectedSession?.status === "busy" || selectedSession?.status === "retry"
+  const isAsking = selectedSession?.status === "ask"
 
   return (
     <div className="app-screen">
@@ -121,10 +120,10 @@ export default function ChatScreen({
           {chatSub && <div className="chat-hsub">{chatSub}</div>}
         </div>
         <div className="chat-hbadges">
-          {isRunning && (
-            <div className="running-pill">
-              <div className="rpulse"></div>
-              {selectedSession?.status === "ask" ? "awaiting you" : selectedSession?.status === "retry" ? "retrying" : "running"}
+          {(isRunning || isAsking) && (
+            <div className={`running-pill${isAsking ? " ask" : ""}`}>
+              <div className={`rpulse${isAsking ? " ask" : ""}`}></div>
+              {isAsking ? "awaiting you" : selectedSession?.status === "retry" ? "retrying" : "running"}
             </div>
           )}
           {isWorking && (
@@ -228,7 +227,7 @@ export default function ChatScreen({
         )}
 
         {/* Typing indicator */}
-        {isRunning && renderedMessages.length > 0 && (
+        {isRunning && !isAsking && renderedMessages.length > 0 && (
           <div className="brow ai">
             <div className="avatar ai">AI</div>
             <div className="bcol">
@@ -242,6 +241,14 @@ export default function ChatScreen({
           </div>
         )}
       </div>
+
+      {/* Permission prompt banner */}
+      {isAsking && (
+        <div className="ask-banner">
+          <i className="ti ti-help-circle"></i>
+          <span>{selectedSession?.statusMessage ?? "Opencode is awaiting your response"}</span>
+        </div>
+      )}
 
       {/* Todo box (collapsible) */}
       {todos.length > 0 && (
@@ -316,16 +323,12 @@ export default function ChatScreen({
           setSlashIndex={setSlashIndex}
           filteredCommands={filteredCommands}
           handleSlashSelect={handleSlashSelect}
-          cycleAgent={cycleAgent}
-          cycleVariant={cycleVariant}
-          sessionInfo={sessionInfo}
-          availableVariants={availableVariants}
-          primaryAgents={primaryAgents}
           textareaRef={textareaRef}
-          currentAgent={currentAgent}
-          currentVariant={currentVariant}
           isWorking={isWorking}
           abortSession={abortSession}
+          providers={providers}
+          currentModel={sessionInfo.model}
+          selectModel={selectModel}
         />
       )}
     </div>

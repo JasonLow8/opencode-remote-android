@@ -153,6 +153,28 @@ export function useChat(params: {
     }
   }
 
+  async function selectModel(modelID: string) {
+    if (!selectedSession) return
+    try {
+      setRuntimeError(null)
+      const reply = await api.sendCommand(
+        config,
+        selectedSession.id,
+        "model",
+        modelID,
+        selectedSession.directory,
+        currentAgent ?? undefined,
+        currentVariant ?? undefined
+      )
+      if (reply && reply.info) {
+        setMessages((prev) => [...prev, reply])
+      }
+      await loadSelected(selectedSession.id, selectedSession.directory)
+    } catch (err) {
+      setRuntimeError((err as Error).message)
+    }
+  }
+
   async function abortSession() {
     if (!selectedSession) return
     try {
@@ -217,6 +239,7 @@ export function useChat(params: {
     handleSlashSelect,
     cycleAgent,
     cycleVariant,
-    abortSession
+    abortSession,
+    selectModel
   }
 }

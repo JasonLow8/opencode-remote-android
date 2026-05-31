@@ -15,6 +15,7 @@ type SessionsScreenProps = {
   runtimeError: string | null
   refreshSessions: (silent?: boolean) => Promise<void>
   onOpenSettings: () => void
+  deleteSession: (id: string) => Promise<void>
 }
 
 export default function SessionsScreen({
@@ -27,13 +28,42 @@ export default function SessionsScreen({
   createSession,
   runtimeError,
   refreshSessions,
-  onOpenSettings
+  onOpenSettings,
+  deleteSession
 }: SessionsScreenProps) {
   const [pullDelta, setPullDelta] = useState(0)
   const [isPullRefreshing, setIsPullRefreshing] = useState(false)
   const pullDeltaRef = useRef(0)
   const sessionsRef = useRef<HTMLDivElement | null>(null)
   const PULL_THRESHOLD = 80
+
+  const [selectionMode, setSelectionMode] = useState(false)
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+
+  function enterSelectionMode(id: string) {
+    setSelectionMode(true)
+    setSelectedIds(new Set([id]))
+  }
+
+  function toggleSelection(id: string) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  function exitSelectionMode() {
+    setSelectionMode(false)
+    setSelectedIds(new Set())
+  }
+
+  async function handleDelete() {
+    const ids = Array.from(selectedIds)
+    exitSelectionMode()
+    await Promise.all(ids.map((id) => deleteSession(id)))
+  }
 
   // Pull-to-refresh touch handlers
   useEffect(() => {
@@ -88,7 +118,6 @@ export default function SessionsScreen({
     }
   }, [refreshSessions])
 
-  // Group sessions into running (busy|retry|ask) and recent (idle)
   const runningSessions = filteredSessions.filter(
     (s) => s.status === "busy" || s.status === "retry" || s.status === "ask"
   )
@@ -99,30 +128,50 @@ export default function SessionsScreen({
   return (
     <div className="app-screen">
       {/* Nav header */}
-      <div className="nav-header">
-        <div>
-          <div className="nav-title">Sessions</div>
-          <div className="nav-sub">
-            {config.host} · {connected ? "connected" : "offline"}
+      {selectionMode ? (
+        <div className="nav-header">
+          <button className="back-btn" onClick={exitSelectionMode} aria-label="Cancel">
+            <i className="ti ti-x" />
+          </button>
+          <div>
+            <div className="nav-title">{selectedIds.size} selected</div>
+          </div>
+          <button
+            className="nav-action"
+            aria-label="Delete selected"
+            disabled={selectedIds.size === 0}
+            style={{ color: selectedIds.size > 0 ? "var(--danger)" : undefined }}
+            onClick={() => { handleDelete().catch(() => undefined) }}
+          >
+            <i className="ti ti-trash" />
+          </button>
+        </div>
+      ) : (
+        <div className="nav-header">
+          <div>
+            <div className="nav-title">Sessions</div>
+            <div className="nav-sub">
+              {config.host} · <span style={{ color: connected ? "var(--online-color)" : "var(--danger)" }}>{connected ? "online" : "offline"}</span>
+            </div>
+          </div>
+          <div style={{ display: "flex", gap: 8 }}>
+            <button
+              className="nav-action"
+              aria-label="New session"
+              onClick={() => { createSession().catch(() => undefined) }}
+            >
+              <i className="ti ti-plus" />
+            </button>
+            <button
+              className="nav-action"
+              aria-label="Settings"
+              onClick={onOpenSettings}
+            >
+              <i className="ti ti-settings" />
+            </button>
           </div>
         </div>
-        <div style={{ display: "flex", gap: 8 }}>
-          <button
-            className="nav-action"
-            aria-label="New session"
-            onClick={() => { createSession().catch(() => undefined) }}
-          >
-            <i className="ti ti-plus" />
-          </button>
-          <button
-            className="nav-action"
-            aria-label="Settings"
-            onClick={onOpenSettings}
-          >
-            <i className="ti ti-settings" />
-          </button>
-        </div>
-      </div>
+      )}
 
       {/* Pull-to-refresh indicator */}
       <div
@@ -147,16 +196,18 @@ export default function SessionsScreen({
       </div>
 
       {/* Search row */}
-      <div className="search-row">
-        <div className="search-box">
-          <i className="ti ti-search"></i>
-          <input
-            placeholder="Search sessions by title or directory..."
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-          />
+      {!selectionMode && (
+        <div className="search-row">
+          <div className="search-box">
+            <i className="ti ti-search"></i>
+            <input
+              placeholder="Search sessions by title or directory..."
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+            />
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Sessions list */}
       <div className="list" ref={sessionsRef}>
@@ -176,7 +227,10 @@ export default function SessionsScreen({
                   <SessionCard
                     key={session.id}
                     session={session}
-                    onClick={() => onOpenSession(session.id, session.directory)}
+                    selectionMode={selectionMode}
+                    selected={selectedIds.has(session.id)}
+                    onLongPress={() => enterSelectionMode(session.id)}
+                    onClick={() => selectionMode ? toggleSelection(session.id) : onOpenSession(session.id, session.directory)}
                   />
                 ))}
               </>
@@ -192,7 +246,10 @@ export default function SessionsScreen({
                   <SessionCard
                     key={session.id}
                     session={session}
-                    onClick={() => onOpenSession(session.id, session.directory)}
+                    selectionMode={selectionMode}
+                    selected={selectedIds.has(session.id)}
+                    onLongPress={() => enterSelectionMode(session.id)}
+                    onClick={() => selectionMode ? toggleSelection(session.id) : onOpenSession(session.id, session.directory)}
                   />
                 ))}
               </>

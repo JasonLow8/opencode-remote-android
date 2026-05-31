@@ -41,7 +41,7 @@ function App() {
   const connected = sv.connectedVersion !== ""
 
   const isWorking = Boolean(
-    sd.selectedSession && ["busy", "retry"].includes(sd.selectedSession.status),
+    sd.selectedSession && ["busy", "retry", "ask"].includes(sd.selectedSession.status),
   )
 
   function openSession(id: string, dir: string) {
@@ -131,6 +131,8 @@ function App() {
           textareaRef={chat.textareaRef}
           currentAgent={sd.currentAgent}
           currentVariant={sd.currentVariant}
+          providers={sd.providers}
+          selectModel={chat.selectModel}
         />
       ) : helpOpen ? (
         <HelpScreen
@@ -153,6 +155,7 @@ function App() {
               runtimeError={sd.runtimeError}
               refreshSessions={sd.refreshSessions}
               onOpenSettings={() => setTab("settings")}
+              deleteSession={sd.deleteSession}
             />
           )}
           {tab === "settings" && (

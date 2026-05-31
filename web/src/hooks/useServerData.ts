@@ -148,6 +148,7 @@ export function useServerData(config: ServerConfig) {
         }))
         .sort((a, b) => b.updated - a.updated)
       setSessions(mapped)
+      setRuntimeError(null)
     } catch (err) {
       setRuntimeError((err as Error).message)
     }
@@ -195,7 +196,6 @@ export function useServerData(config: ServerConfig) {
   }, [config])
 
   const loadSelected = useCallback(async (sessionID: string, directory: string) => {
-    setRuntimeError(null)
     try {
       const [msg, todo] = await Promise.all([
         api.loadMessages(config, sessionID, directory),

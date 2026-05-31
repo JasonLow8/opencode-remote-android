@@ -1,6 +1,7 @@
-import { useCallback } from "react"
-import type { AgentInfo, CommandInfo } from "../types"
+import { useCallback, useState } from "react"
+import type { CommandInfo, ProviderInfo } from "../types"
 import SlashPopover from "./SlashPopover"
+import ModelPicker from "./ModelPicker"
 
 type Props = {
   composer: string
@@ -8,17 +9,6 @@ type Props = {
   send: () => Promise<void>
   abortSession: () => Promise<void>
   isWorking: boolean
-  sessionInfo: {
-    agent: string | null
-    model: { providerID: string; modelID: string } | null
-    variant: string | null
-  }
-  availableVariants: string[]
-  primaryAgents: AgentInfo[]
-  currentAgent: string | null
-  currentVariant: string | null
-  cycleAgent: () => void
-  cycleVariant: () => void
   slashOpen: boolean
   setSlashOpen: (v: boolean) => void
   slashFilter: string
@@ -28,6 +18,9 @@ type Props = {
   filteredCommands: CommandInfo[]
   handleSlashSelect: (cmd: CommandInfo) => void
   textareaRef: React.RefObject<HTMLTextAreaElement | null>
+  providers: ProviderInfo[]
+  currentModel: { providerID: string; modelID: string } | null
+  selectModel: (modelID: string) => Promise<void>
 }
 
 export default function Composer({
@@ -36,13 +29,6 @@ export default function Composer({
   send,
   abortSession,
   isWorking,
-  sessionInfo,
-  availableVariants,
-  primaryAgents,
-  currentAgent,
-  currentVariant,
-  cycleAgent,
-  cycleVariant,
   slashOpen,
   setSlashOpen,
   setSlashFilter,
@@ -50,8 +36,13 @@ export default function Composer({
   setSlashIndex,
   filteredCommands,
   handleSlashSelect,
-  textareaRef
+  textareaRef,
+  providers,
+  currentModel,
+  selectModel
 }: Props) {
+  const [modelPickerOpen, setModelPickerOpen] = useState(false)
+
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
       const el = e.target
@@ -76,30 +67,18 @@ export default function Composer({
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-      if (slashOpen && filteredCommands.length > 0) {
-        if (e.key === "ArrowDown") {
+      if (slashOpen) {
+        if (e.key === "ArrowDown" && filteredCommands.length > 0) {
           e.preventDefault()
           setSlashIndex((slashIndex + 1) % filteredCommands.length)
           return
         }
-        if (e.key === "ArrowUp") {
+        if (e.key === "ArrowUp" && filteredCommands.length > 0) {
           e.preventDefault()
           setSlashIndex((slashIndex - 1 + filteredCommands.length) % filteredCommands.length)
           return
         }
-        if (e.key === "Enter" && !e.shiftKey) {
-          e.preventDefault()
-          handleSlashSelect(filteredCommands[slashIndex] ?? filteredCommands[0])
-          return
-        }
-        if (e.key === "Escape") {
-          e.preventDefault()
-          setSlashOpen(false)
-          return
-        }
-      }
-      if (e.key === "Enter" && !e.shiftKey) {
-        if (slashOpen) {
+        if (e.key === "Enter") {
           e.preventDefault()
           if (filteredCommands.length > 0) {
             handleSlashSelect(filteredCommands[slashIndex] ?? filteredCommands[0])
@@ -108,28 +87,39 @@ export default function Composer({
           }
           return
         }
-        e.preventDefault()
-        send()
+        if (e.key === "Escape") {
+          e.preventDefault()
+          setSlashOpen(false)
+          return
+        }
       }
+      // Enter inserts a newline — send via the send button only
     },
-    [slashOpen, filteredCommands, slashIndex, setSlashIndex, handleSlashSelect, setSlashOpen, send]
+    [slashOpen, filteredCommands, slashIndex, setSlashIndex, handleSlashSelect, setSlashOpen]
   )
 
   const handleBlur = useCallback(() => {
     setTimeout(() => setSlashOpen(false), 150)
   }, [setSlashOpen])
 
-  // Build label for the model pill in the hints section
-  const modelLabel = sessionInfo.model
-    ? `${sessionInfo.model.providerID}/${sessionInfo.model.modelID}`
+  // Find human-readable model name from providers list
+  const modelDisplayName = currentModel
+    ? (providers
+        .find((p) => p.id === currentModel.providerID)
+        ?.models[currentModel.modelID]?.name ?? currentModel.modelID)
     : null
-
-  const variantLabel = currentVariant ?? sessionInfo.variant
-  const agentLabel = currentAgent ?? sessionInfo.agent
 
   return (
     <div className="composer">
-      {/* Slash command popover */}
+      {modelPickerOpen && (
+        <ModelPicker
+          providers={providers}
+          currentModelID={currentModel?.modelID ?? null}
+          onSelect={(id) => { selectModel(id).catch(() => undefined) }}
+          onClose={() => setModelPickerOpen(false)}
+        />
+      )}
+
       {slashOpen && filteredCommands.length > 0 && (
         <SlashPopover
           commands={filteredCommands}
@@ -139,7 +129,18 @@ export default function Composer({
         />
       )}
 
-      {/* Composer box */}
+      {modelDisplayName && (
+        <button
+          className="model-btn"
+          onClick={() => setModelPickerOpen(true)}
+          title="Switch model"
+        >
+          <i className="ti ti-brain" />
+          {modelDisplayName}
+          <i className="ti ti-chevron-up" />
+        </button>
+      )}
+
       <div className="composer-box">
         <textarea
           ref={textareaRef as React.RefObject<HTMLTextAreaElement>}
@@ -160,40 +161,6 @@ export default function Composer({
           <button className="csend" onClick={send} disabled={isWorking} title="Send">
             <i className="ti ti-send" />
           </button>
-        )}
-      </div>
-
-      {/* Hints and pills */}
-      <div className="composer-hints">
-        <span className="chint">/ commands · ⇧↵ newline</span>
-        {(modelLabel || variantLabel || agentLabel) && (
-          <div className="cpills">
-            {modelLabel && <span className="cpill">{modelLabel}</span>}
-            {availableVariants.length > 0 && variantLabel && (
-              <button
-                type="button"
-                className={`cpill cpill-btn${currentVariant ? " active" : ""}`}
-                onClick={cycleVariant}
-                title="Tap to cycle variant"
-              >
-                {variantLabel} ↻
-              </button>
-            )}
-            {variantLabel && availableVariants.length === 0 && (
-              <span className="cpill">{variantLabel}</span>
-            )}
-            {agentLabel && (
-              <button
-                type="button"
-                className={`cpill cpill-btn${currentAgent ? " active" : ""}`}
-                onClick={primaryAgents.length > 0 ? cycleAgent : undefined}
-                title={primaryAgents.length > 0 ? "Tap to cycle agent" : undefined}
-                disabled={primaryAgents.length === 0}
-              >
-                {agentLabel} ↻
-              </button>
-            )}
-          </div>
         )}
       </div>
     </div>
