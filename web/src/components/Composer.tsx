@@ -169,14 +169,14 @@ export default function Composer({
         {(modelLabel || variantLabel || agentLabel) && (
           <div className="cpills">
             {modelLabel && <span className="cpill">{modelLabel}</span>}
-            {availableVariants.length > 0 && variantLabel && (
+            {availableVariants.length > 0 && (
               <button
                 type="button"
                 className={`cpill cpill-btn${currentVariant ? " active" : ""}`}
                 onClick={cycleVariant}
                 title="Tap to cycle variant"
               >
-                {variantLabel} ↻
+                {currentVariant ?? "default"} ↻
               </button>
             )}
             {variantLabel && availableVariants.length === 0 && (
