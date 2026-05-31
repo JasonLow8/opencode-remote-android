@@ -1577,11 +1577,7 @@ input, textarea, button, select {
   font-family: var(--font-mono);
   font-size: 11px;
   font-weight: 600;
-  color: var(--accent);
-  background: var(--tag-run-bg);
-  padding: 2px 8px;
-  border-radius: 5px;
-  border: 1px solid var(--tag-running-border);
+  color: var(--text-secondary);
 }
 
 .tool-title {
