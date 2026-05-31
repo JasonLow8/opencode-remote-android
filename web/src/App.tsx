@@ -153,6 +153,7 @@ function App() {
               runtimeError={sd.runtimeError}
               refreshSessions={sd.refreshSessions}
               onOpenSettings={() => setTab("settings")}
+              deleteSession={sd.deleteSession}
             />
           )}
           {tab === "settings" && (

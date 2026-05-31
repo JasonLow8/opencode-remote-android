@@ -1,8 +1,12 @@
+import { useRef } from "react"
 import type { SessionView } from "../types"
 
 type Props = {
   session: SessionView
   onClick: () => void
+  onLongPress?: () => void
+  selected?: boolean
+  selectionMode?: boolean
 }
 
 function getDotColor(status: string): string {
@@ -11,11 +15,11 @@ function getDotColor(status: string): string {
   return "gray"
 }
 
-function getCardClass(status: string): string {
-  const base = "scard"
-  if (status === "busy" || status === "retry") return `${base} running`
-  if (status === "ask") return `${base} ask`
-  return base
+function getCardClass(status: string, selected?: boolean): string {
+  const sel = selected ? " selected" : ""
+  if (status === "busy" || status === "retry") return `scard running${sel}`
+  if (status === "ask") return `scard ask${sel}`
+  return `scard${sel}`
 }
 
 function renderStatusTag(status: string, statusMessage?: string) {
@@ -28,13 +32,61 @@ function renderStatusTag(status: string, statusMessage?: string) {
   return <span className="tag idle">idle</span>
 }
 
-export default function SessionCard({ session, onClick }: Props) {
+const LONG_PRESS_MS = 500
+
+export default function SessionCard({ session, onClick, onLongPress, selected, selectionMode }: Props) {
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const didLongPressRef = useRef(false)
+  const startPosRef = useRef({ x: 0, y: 0 })
+
+  const startPress = (clientX: number, clientY: number) => {
+    didLongPressRef.current = false
+    startPosRef.current = { x: clientX, y: clientY }
+    timerRef.current = setTimeout(() => {
+      didLongPressRef.current = true
+      onLongPress?.()
+    }, LONG_PRESS_MS)
+  }
+
+  const cancelPress = () => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current)
+      timerRef.current = null
+    }
+  }
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    const dx = e.touches[0].clientX - startPosRef.current.x
+    const dy = e.touches[0].clientY - startPosRef.current.y
+    if (Math.abs(dx) > 8 || Math.abs(dy) > 8) cancelPress()
+  }
+
+  const handleClick = () => {
+    if (didLongPressRef.current) return
+    onClick()
+  }
+
   return (
     <div
-      className={getCardClass(session.status)}
-      onClick={onClick}
+      className={getCardClass(session.status, selected)}
+      style={{ userSelect: "none", WebkitUserSelect: "none" }}
+      onMouseDown={(e) => startPress(e.clientX, e.clientY)}
+      onMouseUp={cancelPress}
+      onMouseLeave={cancelPress}
+      onTouchStart={(e) => startPress(e.touches[0].clientX, e.touches[0].clientY)}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={cancelPress}
+      onTouchCancel={cancelPress}
+      onContextMenu={(e) => e.preventDefault()}
+      onClick={handleClick}
     >
-      <div className={`sdot ${getDotColor(session.status)}`} />
+      {selectionMode ? (
+        <div className="scard-check">
+          <i className={selected ? "ti ti-circle-check-filled" : "ti ti-circle"} />
+        </div>
+      ) : (
+        <div className={`sdot ${getDotColor(session.status)}`} />
+      )}
       <div className="scard-info">
         <div className="scard-name">{session.title}</div>
         <div className="scard-path">{session.directory}</div>
@@ -42,7 +94,7 @@ export default function SessionCard({ session, onClick }: Props) {
           {renderStatusTag(session.status, session.statusMessage)}
         </div>
       </div>
-      <i className="ti ti-chevron-right scard-chevron" />
+      {!selectionMode && <i className="ti ti-chevron-right scard-chevron" />}
     </div>
   )
 }

@@ -423,6 +423,20 @@ input, textarea, button, select {
   background: var(--text-tertiary);
 }
 
+.scard.selected {
+  border-color: var(--accent);
+  background: var(--surface-hover);
+}
+
+.scard-check {
+  font-size: 20px;
+  color: var(--accent);
+  margin-top: 1px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
 .scard-info {
   flex: 1;
   min-width: 0;
